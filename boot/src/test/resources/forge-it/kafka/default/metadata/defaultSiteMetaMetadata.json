@@ -1,0 +1,5 @@
+{
+  "idempotencyId": "idemp-site-meta-123",
+  "createdAt": 1771408800000,
+  "eventType": "SITE_CREATED"
+}
