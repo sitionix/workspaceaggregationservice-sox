@@ -24,19 +24,47 @@ public class SiteMetaProjectionCommandImpl implements SiteMetaProjectionCommand 
     public void applySiteUpdated(final SiteMetaUpdate siteMetaUpdate) {
         final Optional<WorkspaceSiteMeta> existingSiteMeta = this.workspaceSiteMetaRepository.findBySiteId(siteMetaUpdate.siteId());
         existingSiteMeta.ifPresentOrElse(
-                existing -> {
-                    if (Objects.nonNull(siteMetaUpdate.ownerUserId())
-                            && !Objects.equals(existing.ownerUserId(), siteMetaUpdate.ownerUserId())) {
-                        return;
-                    }
-                    this.workspaceSiteMetaRepository.save(existing.mergeWith(siteMetaUpdate));
-                },
-                () -> this.workspaceSiteMetaRepository.save(WorkspaceSiteMeta.fromUpdate(siteMetaUpdate))
+                existing -> this.saveMergedIfOwnerMatches(existing, siteMetaUpdate),
+                () -> this.workspaceSiteMetaRepository.save(this.newProjectionState(siteMetaUpdate))
         );
     }
 
     @Override
     public void applySiteDeleted(final UUID siteId) {
         this.workspaceSiteMetaRepository.deleteBySiteId(siteId);
+    }
+
+    private void saveMergedIfOwnerMatches(final WorkspaceSiteMeta existing, final SiteMetaUpdate siteMetaUpdate) {
+        if (Objects.nonNull(siteMetaUpdate.ownerUserId())
+                && !Objects.equals(existing.ownerUserId(), siteMetaUpdate.ownerUserId())) {
+            return;
+        }
+        this.workspaceSiteMetaRepository.save(this.mergedProjectionState(existing, siteMetaUpdate));
+    }
+
+    private WorkspaceSiteMeta newProjectionState(final SiteMetaUpdate siteMetaUpdate) {
+        return new WorkspaceSiteMeta(
+                siteMetaUpdate.siteId(),
+                siteMetaUpdate.ownerUserId(),
+                siteMetaUpdate.name(),
+                siteMetaUpdate.status(),
+                siteMetaUpdate.type(),
+                siteMetaUpdate.description(),
+                siteMetaUpdate.updatedAt(),
+                siteMetaUpdate.updatedAt()
+        );
+    }
+
+    private WorkspaceSiteMeta mergedProjectionState(final WorkspaceSiteMeta existing, final SiteMetaUpdate siteMetaUpdate) {
+        return new WorkspaceSiteMeta(
+                existing.siteId(),
+                existing.ownerUserId(),
+                Objects.nonNull(siteMetaUpdate.name()) ? siteMetaUpdate.name() : existing.name(),
+                Objects.nonNull(siteMetaUpdate.status()) ? siteMetaUpdate.status() : existing.status(),
+                Objects.nonNull(siteMetaUpdate.type()) ? siteMetaUpdate.type() : existing.type(),
+                Objects.nonNull(siteMetaUpdate.description()) ? siteMetaUpdate.description() : existing.description(),
+                existing.createdAt(),
+                siteMetaUpdate.updatedAt()
+        );
     }
 }

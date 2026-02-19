@@ -101,6 +101,30 @@ class SiteMetaProjectionCommandImplTest {
     }
 
     @Test
+    void givenExistingSiteMetaWithDifferentOwner_whenApplySiteUpdated_thenSkipProjectionUpdate() {
+        //given
+        final UUID siteId = UUID.randomUUID();
+        final WorkspaceSiteMeta existing = this.getWorkspaceSiteMeta(siteId, "Owner Locked", Instant.parse("2026-02-18T09:30:00Z"));
+        this.inMemoryWorkspaceSiteMetaRepository.save(existing);
+        final SiteMetaUpdate siteMetaUpdate = new SiteMetaUpdate(
+                siteId,
+                999L,
+                "Should Not Apply",
+                WorkspaceSiteMetaStatus.PUBLISHED,
+                WorkspaceSiteMetaType.STORE,
+                "Should Not Apply",
+                Instant.parse("2026-02-18T12:30:00Z")
+        );
+
+        //when
+        this.siteMetaProjectionCommand.applySiteUpdated(siteMetaUpdate);
+
+        //then
+        final WorkspaceSiteMeta actual = this.inMemoryWorkspaceSiteMetaRepository.findBySiteId(siteId).orElseThrow();
+        assertThat(actual).isEqualTo(existing);
+    }
+
+    @Test
     void givenSiteId_whenApplySiteDeleted_thenDeleteProjection() {
         //given
         final WorkspaceSiteMeta siteMeta = this.getWorkspaceSiteMeta("Delete me", Instant.parse("2026-02-18T12:10:00Z"));
