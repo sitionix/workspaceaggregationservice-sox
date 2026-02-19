@@ -42,13 +42,23 @@ class SiteMetaConsumerIT {
     }
 
     @Test
-    @DisplayName("given site updated event when consumed then projection saved in postgresql")
-    void givenSiteUpdatedEvent_whenConsumed_thenProjectionSavedInPostgresql() {
+    @DisplayName("given existing site meta when site updated event consumed then projection updated in postgresql")
+    void givenExistingSiteMeta_whenSiteUpdatedEventConsumed_thenProjectionUpdatedInPostgresql() {
         //given
         final UUID expectedSiteId = UUID.fromString("a4daef31-b03a-4e90-9fe9-297c74eaf628");
+        final Instant expectedCreatedAt = Instant.parse("2026-02-18T11:00:00Z");
         final Instant expectedUpdatedAt = Instant.parse("2026-02-18T12:00:00Z");
 
         //when
+        this.testManager.kafka()
+                .publish(SiteMetaKafkaContracts.SITE_META_CREATED_INPUT)
+                .payload("defaultSiteCreatedForUpdateEvent.json")
+                .sendAndVerify(result -> this.testManager.postgresql()
+                        .get(WorkspaceSiteMetaEntity.class)
+                        .singleElement()
+                        .andExpected(entity -> Objects.equals(entity.getSiteId(), expectedSiteId))
+                        .assertEntity());
+
         this.testManager.kafka()
                 .publish(SiteMetaKafkaContracts.SITE_META_UPDATED_INPUT)
                 .sendAndVerify(result -> this.testManager.postgresql()
@@ -60,7 +70,7 @@ class SiteMetaConsumerIT {
                         .andExpected(entity -> Objects.equals(entity.getStatus().getCode(), "PUBLISHED"))
                         .andExpected(entity -> Objects.equals(entity.getType().getCode(), "BUSINESS"))
                         .andExpected(entity -> Objects.equals(entity.getDescription(), "Updated description"))
-                        .andExpected(entity -> Objects.equals(entity.getCreatedAt(), expectedUpdatedAt))
+                        .andExpected(entity -> Objects.equals(entity.getCreatedAt(), expectedCreatedAt))
                         .andExpected(entity -> Objects.equals(entity.getUpdatedAt(), expectedUpdatedAt))
                         .assertEntity());
     }

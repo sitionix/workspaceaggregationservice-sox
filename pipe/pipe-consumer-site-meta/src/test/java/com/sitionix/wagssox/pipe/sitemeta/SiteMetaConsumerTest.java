@@ -70,9 +70,8 @@ class SiteMetaConsumerTest {
         //given
         final SiteMetaEnvelope envelope = mock(SiteMetaEnvelope.class);
         final SiteCreatedEvent payload = mock(SiteCreatedEvent.class);
-        final WorkspaceSiteMeta projected = mock(WorkspaceSiteMeta.class);
         when(envelope.getPayload()).thenReturn(payload);
-        when(this.siteMetaEventMapper.asProjection(payload, WorkspaceSiteMeta.class)).thenReturn(projected);
+        when(this.siteMetaEventMapper.asProjection(payload, WorkspaceSiteMeta.class)).thenReturn(null);
 
         //when
         this.siteMetaConsumer.consumeSiteMeta(envelope);
@@ -80,7 +79,7 @@ class SiteMetaConsumerTest {
         //then
         verify(envelope, times(2)).getPayload();
         verify(this.siteMetaEventMapper).asProjection(payload, WorkspaceSiteMeta.class);
-        verify(this.siteMetaProjectionCommand).applySiteCreated(projected);
+        verify(this.siteMetaProjectionCommand).applySiteCreated(null);
         verifyNoMoreInteractions(envelope, payload);
     }
 
@@ -89,9 +88,8 @@ class SiteMetaConsumerTest {
         //given
         final SiteMetaEnvelope envelope = mock(SiteMetaEnvelope.class);
         final SiteUpdatedEvent payload = mock(SiteUpdatedEvent.class);
-        final SiteMetaUpdate projected = mock(SiteMetaUpdate.class);
         when(envelope.getPayload()).thenReturn(payload);
-        when(this.siteMetaEventMapper.asProjection(payload, SiteMetaUpdate.class)).thenReturn(projected);
+        when(this.siteMetaEventMapper.asProjection(payload, SiteMetaUpdate.class)).thenReturn(null);
 
         //when
         this.siteMetaConsumer.consumeSiteMeta(envelope);
@@ -99,7 +97,7 @@ class SiteMetaConsumerTest {
         //then
         verify(envelope, times(2)).getPayload();
         verify(this.siteMetaEventMapper).asProjection(payload, SiteMetaUpdate.class);
-        verify(this.siteMetaProjectionCommand).applySiteUpdated(projected);
+        verify(this.siteMetaProjectionCommand).applySiteUpdated(null);
         verifyNoMoreInteractions(envelope, payload);
     }
 

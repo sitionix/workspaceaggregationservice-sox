@@ -59,7 +59,7 @@ class SiteMetaProjectionCommandImplTest {
     }
 
     @Test
-    void givenMissingSiteMeta_whenApplySiteUpdated_thenCreateProjectionFromUpdate() {
+    void givenMissingSiteMeta_whenApplySiteUpdated_thenSkipProjectionUpdate() {
         //given
         final UUID siteId = UUID.fromString("3db551f5-98f2-4f9a-b4f5-a5e8f2f13fcb");
         final Instant updatedAt = Instant.parse("2026-02-18T11:30:00Z");
@@ -72,16 +72,6 @@ class SiteMetaProjectionCommandImplTest {
                 "From update",
                 updatedAt
         );
-        final WorkspaceSiteMeta expected = this.getWorkspaceSiteMeta(
-                siteId,
-                55L,
-                "Projected Site",
-                WorkspaceSiteMetaStatus.DRAFT,
-                WorkspaceSiteMetaType.BLOG,
-                "From update",
-                updatedAt,
-                updatedAt
-        );
         when(this.workspaceSiteMetaRepository.findBySiteId(siteId)).thenReturn(Optional.empty());
 
         //when
@@ -89,7 +79,6 @@ class SiteMetaProjectionCommandImplTest {
 
         //then
         verify(this.workspaceSiteMetaRepository).findBySiteId(siteId);
-        verify(this.workspaceSiteMetaRepository).save(expected);
     }
 
     @Test

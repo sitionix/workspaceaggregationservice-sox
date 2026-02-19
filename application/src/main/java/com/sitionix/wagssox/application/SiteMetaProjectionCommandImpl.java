@@ -4,7 +4,6 @@ import com.sitionix.wagssox.domain.SiteMetaUpdate;
 import com.sitionix.wagssox.domain.WorkspaceSiteMeta;
 import com.sitionix.wagssox.domain.repository.WorkspaceSiteMetaRepository;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,11 +21,8 @@ public class SiteMetaProjectionCommandImpl implements SiteMetaProjectionCommand 
 
     @Override
     public void applySiteUpdated(final SiteMetaUpdate siteMetaUpdate) {
-        final Optional<WorkspaceSiteMeta> existingSiteMeta = this.workspaceSiteMetaRepository.findBySiteId(siteMetaUpdate.siteId());
-        existingSiteMeta.ifPresentOrElse(
-                existing -> this.saveMergedIfUserMatches(existing, siteMetaUpdate),
-                () -> this.workspaceSiteMetaRepository.save(this.newProjectionState(siteMetaUpdate))
-        );
+        this.workspaceSiteMetaRepository.findBySiteId(siteMetaUpdate.siteId())
+                .ifPresent(existing -> this.saveMergedIfUserMatches(existing, siteMetaUpdate));
     }
 
     @Override
@@ -40,19 +36,6 @@ public class SiteMetaProjectionCommandImpl implements SiteMetaProjectionCommand 
             return;
         }
         this.workspaceSiteMetaRepository.save(this.mergedProjectionState(existing, siteMetaUpdate));
-    }
-
-    private WorkspaceSiteMeta newProjectionState(final SiteMetaUpdate siteMetaUpdate) {
-        return new WorkspaceSiteMeta(
-                siteMetaUpdate.siteId(),
-                siteMetaUpdate.userId(),
-                siteMetaUpdate.name(),
-                siteMetaUpdate.status(),
-                siteMetaUpdate.type(),
-                siteMetaUpdate.description(),
-                siteMetaUpdate.updatedAt(),
-                siteMetaUpdate.updatedAt()
-        );
     }
 
     private WorkspaceSiteMeta mergedProjectionState(final WorkspaceSiteMeta existing, final SiteMetaUpdate siteMetaUpdate) {
