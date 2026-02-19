@@ -25,7 +25,7 @@ public class SiteMetaProjectionCommandImpl implements SiteMetaProjectionCommand 
         final Optional<WorkspaceSiteMeta> maybeExisting = this.workspaceSiteMetaRepository.findBySiteId(siteMetaUpdate.siteId());
 
         if (maybeExisting.isEmpty()) {
-            this.workspaceSiteMetaRepository.save(this.asCreatedFromUpdate(siteMetaUpdate));
+            this.workspaceSiteMetaRepository.save(WorkspaceSiteMeta.fromUpdate(siteMetaUpdate));
             return;
         }
 
@@ -34,37 +34,11 @@ public class SiteMetaProjectionCommandImpl implements SiteMetaProjectionCommand 
             return;
         }
 
-        this.workspaceSiteMetaRepository.save(this.asUpdatedSiteMeta(existing, siteMetaUpdate));
+        this.workspaceSiteMetaRepository.save(existing.mergeWith(siteMetaUpdate));
     }
 
     @Override
     public void applySiteDeleted(final UUID siteId) {
         this.workspaceSiteMetaRepository.deleteBySiteId(siteId);
-    }
-
-    private WorkspaceSiteMeta asCreatedFromUpdate(final SiteMetaUpdate siteMetaUpdate) {
-        return new WorkspaceSiteMeta(
-                siteMetaUpdate.siteId(),
-                siteMetaUpdate.ownerUserId(),
-                siteMetaUpdate.name(),
-                siteMetaUpdate.status(),
-                siteMetaUpdate.type(),
-                siteMetaUpdate.description(),
-                siteMetaUpdate.updatedAt(),
-                siteMetaUpdate.updatedAt()
-        );
-    }
-
-    private WorkspaceSiteMeta asUpdatedSiteMeta(final WorkspaceSiteMeta existing, final SiteMetaUpdate siteMetaUpdate) {
-        return new WorkspaceSiteMeta(
-                existing.siteId(),
-                existing.ownerUserId(),
-                Objects.nonNull(siteMetaUpdate.name()) ? siteMetaUpdate.name() : existing.name(),
-                Objects.nonNull(siteMetaUpdate.status()) ? siteMetaUpdate.status() : existing.status(),
-                Objects.nonNull(siteMetaUpdate.type()) ? siteMetaUpdate.type() : existing.type(),
-                Objects.nonNull(siteMetaUpdate.description()) ? siteMetaUpdate.description() : existing.description(),
-                existing.createdAt(),
-                siteMetaUpdate.updatedAt()
-        );
     }
 }
