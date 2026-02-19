@@ -2,6 +2,7 @@ package com.sitionix.wagssox.it;
 
 import com.sitionix.forgeit.core.test.IntegrationTest;
 import com.sitionix.wagssox.infrastructure.postgresql.entity.WorkspaceSiteMetaEntity;
+import com.sitionix.wagssox.it.infra.DatabaseContract;
 import com.sitionix.wagssox.it.kafka.SiteMetaKafkaContracts;
 import java.time.Instant;
 import java.util.Objects;
@@ -33,8 +34,8 @@ class SiteMetaConsumerIT {
                         .andExpected(entity -> Objects.equals(entity.getSiteId(), expectedSiteId))
                         .andExpected(entity -> Objects.equals(entity.getUserId(), 17L))
                         .andExpected(entity -> Objects.equals(entity.getName(), "Site A"))
-                        .andExpected(entity -> Objects.equals(entity.getStatus().getCode(), "DRAFT"))
-                        .andExpected(entity -> Objects.equals(entity.getType().getCode(), "BLOG"))
+                        .andExpected(entity -> Objects.equals(entity.getStatus().getId(), 1L))
+                        .andExpected(entity -> Objects.equals(entity.getType().getId(), 3L))
                         .andExpected(entity -> Objects.equals(entity.getDescription(), "Description"))
                         .andExpected(entity -> Objects.equals(entity.getCreatedAt(), expectedCreatedAt))
                         .andExpected(entity -> Objects.equals(entity.getUpdatedAt(), expectedUpdatedAt))
@@ -49,16 +50,14 @@ class SiteMetaConsumerIT {
         final Instant expectedCreatedAt = Instant.parse("2026-02-18T11:00:00Z");
         final Instant expectedUpdatedAt = Instant.parse("2026-02-18T12:00:00Z");
 
-        //when
-        this.testManager.kafka()
-                .publish(SiteMetaKafkaContracts.SITE_META_CREATED_INPUT)
-                .payload("defaultSiteCreatedForUpdateEvent.json")
-                .sendAndVerify(result -> this.testManager.postgresql()
-                        .get(WorkspaceSiteMetaEntity.class)
-                        .singleElement()
-                        .andExpected(entity -> Objects.equals(entity.getSiteId(), expectedSiteId))
-                        .assertEntity());
+        this.testManager.postgresql()
+                .create()
+                .to(DatabaseContract.WORKSPACE_SITE_META_STATUS_ENTITY_DB_CONTRACT.getById(1L))
+                .to(DatabaseContract.WORKSPACE_SITE_META_TYPE_ENTITY_DB_CONTRACT.getById(1L))
+                .to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withJson("workspaceSiteMetaBeforeUpdate.json"))
+                .build();
 
+        //when
         this.testManager.kafka()
                 .publish(SiteMetaKafkaContracts.SITE_META_UPDATED_INPUT)
                 .sendAndVerify(result -> this.testManager.postgresql()
@@ -67,8 +66,8 @@ class SiteMetaConsumerIT {
                         .andExpected(entity -> Objects.equals(entity.getSiteId(), expectedSiteId))
                         .andExpected(entity -> Objects.equals(entity.getUserId(), 21L))
                         .andExpected(entity -> Objects.equals(entity.getName(), "Updated Site Name"))
-                        .andExpected(entity -> Objects.equals(entity.getStatus().getCode(), "PUBLISHED"))
-                        .andExpected(entity -> Objects.equals(entity.getType().getCode(), "BUSINESS"))
+                        .andExpected(entity -> Objects.equals(entity.getStatus().getId(), 2L))
+                        .andExpected(entity -> Objects.equals(entity.getType().getId(), 2L))
                         .andExpected(entity -> Objects.equals(entity.getDescription(), "Updated description"))
                         .andExpected(entity -> Objects.equals(entity.getCreatedAt(), expectedCreatedAt))
                         .andExpected(entity -> Objects.equals(entity.getUpdatedAt(), expectedUpdatedAt))
@@ -81,16 +80,14 @@ class SiteMetaConsumerIT {
         //given
         final UUID expectedSiteId = UUID.fromString("be8dbc7c-5d3f-4195-b6f5-80e36195fe5a");
 
-        //when
-        this.testManager.kafka()
-                .publish(SiteMetaKafkaContracts.SITE_META_CREATED_INPUT)
-                .payload("defaultSiteCreatedForDeleteEvent.json")
-                .sendAndVerify(result -> this.testManager.postgresql()
-                        .get(WorkspaceSiteMetaEntity.class)
-                        .singleElement()
-                        .andExpected(entity -> Objects.equals(entity.getSiteId(), expectedSiteId))
-                        .assertEntity());
+        this.testManager.postgresql()
+                .create()
+                .to(DatabaseContract.WORKSPACE_SITE_META_STATUS_ENTITY_DB_CONTRACT.getById(1L))
+                .to(DatabaseContract.WORKSPACE_SITE_META_TYPE_ENTITY_DB_CONTRACT.getById(1L))
+                .to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withJson("workspaceSiteMetaBeforeDelete.json"))
+                .build();
 
+        //when
         this.testManager.kafka()
                 .publish(SiteMetaKafkaContracts.SITE_META_DELETED_INPUT)
                 .sendAndVerify(result -> this.testManager.postgresql()
