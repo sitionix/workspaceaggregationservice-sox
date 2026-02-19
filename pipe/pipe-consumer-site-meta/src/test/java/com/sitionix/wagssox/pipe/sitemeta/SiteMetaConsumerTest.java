@@ -11,8 +11,13 @@ import com.sitionix.wagssox.application.SiteMetaProjectionCommand;
 import com.sitionix.wagssox.domain.WorkspaceSiteMeta;
 import com.sitionix.wagssox.domain.WorkspaceSiteMetaStatus;
 import com.sitionix.wagssox.domain.WorkspaceSiteMetaType;
+import com.sitionix.wagssox.pipe.sitemeta.handler.SiteCreatedPayloadHandler;
+import com.sitionix.wagssox.pipe.sitemeta.handler.SiteDeletedPayloadHandler;
+import com.sitionix.wagssox.pipe.sitemeta.handler.SiteUpdatedPayloadHandler;
+import com.sitionix.wagssox.pipe.sitemeta.handler.registry.SiteMetaPayloadHandlerRegistry;
 import com.sitionix.wagssox.pipe.sitemeta.mapper.SiteMetaEventMapper;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,7 +32,13 @@ class SiteMetaConsumerTest {
     @BeforeEach
     void setUp() {
         this.capturingSiteMetaProjectionCommand = new CapturingSiteMetaProjectionCommand();
-        this.siteMetaConsumer = new SiteMetaConsumer(this.capturingSiteMetaProjectionCommand, new SiteMetaEventMapper());
+        final SiteMetaEventMapper siteMetaEventMapper = new SiteMetaEventMapper();
+        final SiteMetaPayloadHandlerRegistry siteMetaPayloadHandlerRegistry = new SiteMetaPayloadHandlerRegistry(List.of(
+                new SiteCreatedPayloadHandler(this.capturingSiteMetaProjectionCommand, siteMetaEventMapper),
+                new SiteUpdatedPayloadHandler(this.capturingSiteMetaProjectionCommand, siteMetaEventMapper),
+                new SiteDeletedPayloadHandler(this.capturingSiteMetaProjectionCommand, siteMetaEventMapper)
+        ));
+        this.siteMetaConsumer = new SiteMetaConsumer(siteMetaPayloadHandlerRegistry);
     }
 
     @Test
