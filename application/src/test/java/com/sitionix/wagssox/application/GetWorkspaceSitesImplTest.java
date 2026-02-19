@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.BadCredentialsException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -45,61 +47,58 @@ class GetWorkspaceSitesImplTest {
     void givenWorkspaceSitesPage_whenExecute_thenReturnWorkspaceSitesPageFromRepository() {
         //given
         final Long userId = 123L;
-        final Integer page = 0;
-        final Integer size = 20;
+        final Pageable pageable = PageRequest.of(0, 20);
         final WorkspaceSiteMeta workspaceSiteMeta = mock(WorkspaceSiteMeta.class);
         final WorkspaceSitesPage repositoryResponse = WorkspaceSitesPage.builder()
                 .items(List.of(workspaceSiteMeta))
-                .page(page)
-                .size(size)
+                .page(pageable.getPageNumber())
+                .size(pageable.getPageSize())
                 .hasNext(true)
                 .build();
         when(this.forgeUserClient.getUserId()).thenReturn(userId);
-        when(this.workspaceSiteMetaRepository.findActiveByUserId(userId, page, size)).thenReturn(repositoryResponse);
+        when(this.workspaceSiteMetaRepository.findActiveByUserId(userId, pageable)).thenReturn(repositoryResponse);
 
         //when
-        final WorkspaceSitesPage actual = this.getWorkspaceSites.execute(page, size);
+        final WorkspaceSitesPage actual = this.getWorkspaceSites.execute(pageable);
 
         //then
         assertThat(actual).isEqualTo(repositoryResponse);
         verify(this.forgeUserClient).getUserId();
-        verify(this.workspaceSiteMetaRepository).findActiveByUserId(userId, page, size);
+        verify(this.workspaceSiteMetaRepository).findActiveByUserId(userId, pageable);
     }
 
     @Test
     void givenSecondPage_whenExecute_thenReturnSecondPageFromRepository() {
         //given
         final Long userId = 456L;
-        final Integer page = 1;
-        final Integer size = 20;
+        final Pageable pageable = PageRequest.of(1, 20);
         final WorkspaceSiteMeta workspaceSiteMeta = mock(WorkspaceSiteMeta.class);
         final WorkspaceSitesPage repositoryResponse = WorkspaceSitesPage.builder()
                 .items(List.of(workspaceSiteMeta))
-                .page(page)
-                .size(size)
+                .page(pageable.getPageNumber())
+                .size(pageable.getPageSize())
                 .hasNext(false)
                 .build();
         when(this.forgeUserClient.getUserId()).thenReturn(userId);
-        when(this.workspaceSiteMetaRepository.findActiveByUserId(userId, page, size)).thenReturn(repositoryResponse);
+        when(this.workspaceSiteMetaRepository.findActiveByUserId(userId, pageable)).thenReturn(repositoryResponse);
 
         //when
-        final WorkspaceSitesPage actual = this.getWorkspaceSites.execute(page, size);
+        final WorkspaceSitesPage actual = this.getWorkspaceSites.execute(pageable);
 
         //then
         assertThat(actual).isEqualTo(repositoryResponse);
         verify(this.forgeUserClient).getUserId();
-        verify(this.workspaceSiteMetaRepository).findActiveByUserId(userId, page, size);
+        verify(this.workspaceSiteMetaRepository).findActiveByUserId(userId, pageable);
     }
 
     @Test
     void givenMissingUserContext_whenExecute_thenThrowBadCredentialsException() {
         //given
-        final Integer page = 0;
-        final Integer size = 20;
+        final Pageable pageable = PageRequest.of(0, 20);
         when(this.forgeUserClient.getUserId()).thenThrow(new BadCredentialsException("Authentication required."));
 
         //when then
-        assertThatThrownBy(() -> this.getWorkspaceSites.execute(page, size))
+        assertThatThrownBy(() -> this.getWorkspaceSites.execute(pageable))
                 .isInstanceOf(BadCredentialsException.class)
                 .hasMessage("Authentication required.");
 

@@ -1,51 +1,5 @@
 {
-  "items": [
-    {
-      "siteId": "00000000-0000-0000-0000-000000000005",
-      "name": "Site 5",
-      "status": "DRAFT",
-      "type": "PORTFOLIO",
-      "description": "Description 5",
-      "createdAt": "2026-01-01T00:00:00Z",
-      "updatedAt": "2026-01-01T00:00:05Z"
-    },
-    {
-      "siteId": "00000000-0000-0000-0000-000000000004",
-      "name": "Site 4",
-      "status": "DRAFT",
-      "type": "PORTFOLIO",
-      "description": "Description 4",
-      "createdAt": "2026-01-01T00:00:00Z",
-      "updatedAt": "2026-01-01T00:00:04Z"
-    },
-    {
-      "siteId": "00000000-0000-0000-0000-000000000003",
-      "name": "Site 3",
-      "status": "DRAFT",
-      "type": "PORTFOLIO",
-      "description": "Description 3",
-      "createdAt": "2026-01-01T00:00:00Z",
-      "updatedAt": "2026-01-01T00:00:03Z"
-    },
-    {
-      "siteId": "00000000-0000-0000-0000-000000000002",
-      "name": "Site 2",
-      "status": "DRAFT",
-      "type": "PORTFOLIO",
-      "description": "Description 2",
-      "createdAt": "2026-01-01T00:00:00Z",
-      "updatedAt": "2026-01-01T00:00:02Z"
-    },
-    {
-      "siteId": "00000000-0000-0000-0000-000000000001",
-      "name": "Site 1",
-      "status": "DRAFT",
-      "type": "PORTFOLIO",
-      "description": "Description 1",
-      "createdAt": "2026-01-01T00:00:00Z",
-      "updatedAt": "2026-01-01T00:00:01Z"
-    }
-  ],
+  "items": [],
   "page": 1,
   "size": 20,
   "hasNext": false

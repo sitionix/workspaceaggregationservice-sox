@@ -8,11 +8,14 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -46,7 +49,7 @@ class SiteControllerTest {
         final Integer page = 1;
         final WorkspaceSitesPage useCaseResult = mock(WorkspaceSitesPage.class);
         final WorkspaceSitesPageDTO responseDTO = mock(WorkspaceSitesPageDTO.class);
-        when(this.getWorkspaceSites.execute(page, size)).thenReturn(useCaseResult);
+        when(this.getWorkspaceSites.execute(any(Pageable.class))).thenReturn(useCaseResult);
         when(this.siteApiMapper.asWorkspaceSitesPageDTO(useCaseResult)).thenReturn(responseDTO);
 
         //when
@@ -54,7 +57,12 @@ class SiteControllerTest {
 
         //then
         assertThat(actual).isEqualTo(ResponseEntity.ok(responseDTO));
-        verify(this.getWorkspaceSites).execute(page, size);
+        final ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+        verify(this.getWorkspaceSites).execute(pageableCaptor.capture());
+        final Pageable pageable = pageableCaptor.getValue();
+        assertThat(pageable.getPageNumber()).isEqualTo(page);
+        assertThat(pageable.getPageSize()).isEqualTo(size);
+        assertThat(pageable.getSort().getOrderFor("updatedAt").isDescending()).isTrue();
         verify(this.siteApiMapper).asWorkspaceSitesPageDTO(useCaseResult);
     }
 }

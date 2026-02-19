@@ -21,47 +21,54 @@ class SiteControllerIT {
     private TestManager testManager;
 
     @Test
-    @DisplayName("given active archived and deleted sites when get first page then return only twenty active sorted by updatedAt desc")
-    void givenActiveArchivedAndDeletedSites_whenGetFirstPage_thenReturnOnlyTwentyActiveSortedByUpdatedAtDesc() {
+    @DisplayName("given active archived and deleted sites when get first page then return only active sorted by updatedAt desc")
+    void givenActiveArchivedAndDeletedSites_whenGetFirstPage_thenReturnOnlyActiveSortedByUpdatedAtDesc() {
         //given
         final Instant baseUpdatedAt = Instant.parse("2026-01-01T00:00:00Z");
         DbGraphChain<?> dbGraph = this.testManager.postgresql()
                 .create()
                 .to(DatabaseContract.WORKSPACE_SITE_META_STATUS_ENTITY_DB_CONTRACT.getById(1L))
-                .to(DatabaseContract.WORKSPACE_SITE_META_TYPE_ENTITY_DB_CONTRACT.getById(1L));
-
-        for (int index = 1; index <= 20; index++) {
-            dbGraph = dbGraph.to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withEntity(
-                    new WorkspaceSiteMetaEntity(
-                            UUID.fromString(String.format("00000000-0000-0000-0000-%012d", index)),
-                            123L,
-                            "Draft site " + index,
-                            null,
-                            null,
-                            "Description " + index,
-                            baseUpdatedAt,
-                            baseUpdatedAt.plusSeconds(index),
-                            null
-                    )
-            ));
-        }
-
-        dbGraph = dbGraph.to(DatabaseContract.WORKSPACE_SITE_META_STATUS_ENTITY_DB_CONTRACT.getById(2L));
-        for (int index = 21; index <= 25; index++) {
-            dbGraph = dbGraph.to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withEntity(
-                    new WorkspaceSiteMetaEntity(
-                            UUID.fromString(String.format("00000000-0000-0000-0000-%012d", index)),
-                            123L,
-                            index == 25 ? null : "Published site " + index,
-                            null,
-                            null,
-                            "Description " + index,
-                            baseUpdatedAt,
-                            baseUpdatedAt.plusSeconds(index),
-                            null
-                    )
-            ));
-        }
+                .to(DatabaseContract.WORKSPACE_SITE_META_TYPE_ENTITY_DB_CONTRACT.getById(1L))
+                .to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withEntity(
+                        new WorkspaceSiteMetaEntity(
+                                UUID.fromString("00000000-0000-0000-0000-000000000001"),
+                                123L,
+                                "Draft site 1",
+                                null,
+                                null,
+                                "Description 1",
+                                baseUpdatedAt,
+                                baseUpdatedAt.plusSeconds(10),
+                                null
+                        )
+                ))
+                .to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withEntity(
+                        new WorkspaceSiteMetaEntity(
+                                UUID.fromString("00000000-0000-0000-0000-000000000002"),
+                                123L,
+                                "Draft site 2",
+                                null,
+                                null,
+                                "Description 2",
+                                baseUpdatedAt,
+                                baseUpdatedAt.plusSeconds(5),
+                                null
+                        )
+                ))
+                .to(DatabaseContract.WORKSPACE_SITE_META_STATUS_ENTITY_DB_CONTRACT.getById(2L))
+                .to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withEntity(
+                        new WorkspaceSiteMetaEntity(
+                                UUID.fromString("00000000-0000-0000-0000-000000000003"),
+                                123L,
+                                null,
+                                null,
+                                null,
+                                "Description 3",
+                                baseUpdatedAt,
+                                baseUpdatedAt.plusSeconds(20),
+                                null
+                        )
+                ));
 
         dbGraph = dbGraph
                 .to(DatabaseContract.WORKSPACE_SITE_META_STATUS_ENTITY_DB_CONTRACT.getById(3L))
@@ -120,32 +127,54 @@ class SiteControllerIT {
     }
 
     @Test
-    @DisplayName("given twenty five active sites when get next page then return last five without overlap and hasNext false")
-    void givenTwentyFiveActiveSites_whenGetNextPage_thenReturnLastFiveWithoutOverlapAndHasNextFalse() {
+    @DisplayName("given less than one page of active sites when get next page then return empty items and hasNext false")
+    void givenLessThanOnePageOfActiveSites_whenGetNextPage_thenReturnEmptyItemsAndHasNextFalse() {
         //given
         final Instant baseUpdatedAt = Instant.parse("2026-01-01T00:00:00Z");
-        DbGraphChain<?> dbGraph = this.testManager.postgresql()
+        this.testManager.postgresql()
                 .create()
                 .to(DatabaseContract.WORKSPACE_SITE_META_STATUS_ENTITY_DB_CONTRACT.getById(1L))
-                .to(DatabaseContract.WORKSPACE_SITE_META_TYPE_ENTITY_DB_CONTRACT.getById(1L));
-
-        for (int index = 1; index <= 25; index++) {
-            dbGraph = dbGraph.to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withEntity(
-                    new WorkspaceSiteMetaEntity(
-                            UUID.fromString(String.format("00000000-0000-0000-0000-%012d", index)),
-                            123L,
-                            "Site " + index,
-                            null,
-                            null,
-                            "Description " + index,
-                            baseUpdatedAt,
-                            baseUpdatedAt.plusSeconds(index),
-                            null
-                    )
-            ));
-        }
-
-        dbGraph.build();
+                .to(DatabaseContract.WORKSPACE_SITE_META_TYPE_ENTITY_DB_CONTRACT.getById(1L))
+                .to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withEntity(
+                        new WorkspaceSiteMetaEntity(
+                                UUID.fromString("00000000-0000-0000-0000-000000000010"),
+                                123L,
+                                "Site 10",
+                                null,
+                                null,
+                                "Description 10",
+                                baseUpdatedAt,
+                                baseUpdatedAt.plusSeconds(10),
+                                null
+                        )
+                ))
+                .to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withEntity(
+                        new WorkspaceSiteMetaEntity(
+                                UUID.fromString("00000000-0000-0000-0000-000000000011"),
+                                123L,
+                                "Site 11",
+                                null,
+                                null,
+                                "Description 11",
+                                baseUpdatedAt,
+                                baseUpdatedAt.plusSeconds(11),
+                                null
+                        )
+                ))
+                .to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withEntity(
+                        new WorkspaceSiteMetaEntity(
+                                UUID.fromString("00000000-0000-0000-0000-000000000012"),
+                                123L,
+                                "Site 12",
+                                null,
+                                null,
+                                "Description 12",
+                                baseUpdatedAt,
+                                baseUpdatedAt.plusSeconds(12),
+                                null
+                        )
+                ))
+                .build();
 
         //when then
         this.testManager.mockMvc()

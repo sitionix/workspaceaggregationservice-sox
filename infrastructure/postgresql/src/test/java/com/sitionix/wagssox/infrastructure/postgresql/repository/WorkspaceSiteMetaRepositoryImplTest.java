@@ -5,14 +5,12 @@ import com.sitionix.wagssox.domain.WorkspaceSitesPage;
 import com.sitionix.wagssox.infrastructure.postgresql.entity.WorkspaceSiteMetaEntity;
 import com.sitionix.wagssox.infrastructure.postgresql.jpa.WorkspaceSiteMetaJpaRepository;
 import com.sitionix.wagssox.infrastructure.postgresql.mapper.WorkspaceSiteMetaInfraMapper;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
@@ -20,7 +18,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -91,36 +88,29 @@ class WorkspaceSiteMetaRepositoryImplTest {
     }
 
     @Test
-    void givenUserIdAndPage_whenFindActiveByUserId_thenQueryWithArchivedFilterAndUpdatedAtDesc() {
+    void givenUserIdAndPageable_whenFindActiveByUserId_thenQueryWithArchivedFilterAndMapPage() {
         //given
         final Long userId = 123L;
-        final Integer page = 1;
-        final Integer size = 20;
+        final Pageable pageable = PageRequest.of(1, 20);
         final Page<WorkspaceSiteMetaEntity> entityPage = mock(Page.class);
         final WorkspaceSitesPage expected = mock(WorkspaceSitesPage.class);
         when(this.workspaceSiteMetaJpaRepository.findActiveByUserId(
                 eq(userId),
                 eq(3L),
-                any(Pageable.class)
+                eq(pageable)
         )).thenReturn(entityPage);
         when(this.workspaceSiteMetaInfraMapper.asWorkspaceSitesPage(entityPage)).thenReturn(expected);
 
         //when
-        final WorkspaceSitesPage actual = this.workspaceSiteMetaRepository.findActiveByUserId(userId, page, size);
+        final WorkspaceSitesPage actual = this.workspaceSiteMetaRepository.findActiveByUserId(userId, pageable);
 
         //then
         assertThat(actual).isEqualTo(expected);
-
-        final ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
         verify(this.workspaceSiteMetaJpaRepository).findActiveByUserId(
                 eq(userId),
                 eq(3L),
-                pageableCaptor.capture()
+                eq(pageable)
         );
-        final Pageable actualPageable = pageableCaptor.getValue();
-        assertThat(actualPageable.getPageNumber()).isEqualTo(page);
-        assertThat(actualPageable.getPageSize()).isEqualTo(size);
-        assertThat(actualPageable.getSort().isUnsorted()).isTrue();
         verify(this.workspaceSiteMetaInfraMapper).asWorkspaceSitesPage(entityPage);
     }
 }

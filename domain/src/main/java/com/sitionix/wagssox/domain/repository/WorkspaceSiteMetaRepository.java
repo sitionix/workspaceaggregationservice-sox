@@ -4,6 +4,7 @@ import com.sitionix.wagssox.domain.WorkspaceSiteMeta;
 import com.sitionix.wagssox.domain.WorkspaceSitesPage;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Pageable;
 
 /**
  * Repository for read-model metadata of user sites shown in workspace.
@@ -30,10 +31,9 @@ public interface WorkspaceSiteMetaRepository {
      * Loads active (non-archived and non-soft-deleted) site metadata for a user in descending update order.
      *
      * @param userId user identifier.
-     * @param page zero-based page number.
-     * @param size maximum number of records to load.
+     * @param pageable page request with paging and sorting.
      * @return ordered page of records.
      */
-    WorkspaceSitesPage findActiveByUserId(Long userId, Integer page, Integer size);
+    WorkspaceSitesPage findActiveByUserId(Long userId, Pageable pageable);
 
 }

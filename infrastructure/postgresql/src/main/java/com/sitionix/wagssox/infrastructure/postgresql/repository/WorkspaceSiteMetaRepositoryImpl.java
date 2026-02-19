@@ -11,7 +11,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -35,11 +35,11 @@ public class WorkspaceSiteMetaRepositoryImpl implements WorkspaceSiteMetaReposit
     }
 
     @Override
-    public WorkspaceSitesPage findActiveByUserId(final Long userId, final Integer page, final Integer size) {
+    public WorkspaceSitesPage findActiveByUserId(final Long userId, final Pageable pageable) {
         final Page<WorkspaceSiteMetaEntity> entities = this.workspaceSiteMetaJpaRepository.findActiveByUserId(
                 userId,
                 WorkspaceSiteMetaStatus.ARCHIVED.getId(),
-                PageRequest.of(page, size)
+                pageable
         );
         return this.workspaceSiteMetaInfraMapper.asWorkspaceSitesPage(entities);
     }
