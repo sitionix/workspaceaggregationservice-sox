@@ -5,7 +5,6 @@ import com.sitionix.wagssox.domain.repository.WorkspaceSiteMetaRepository;
 import com.sitionix.wagssox.infrastructure.postgresql.entity.WorkspaceSiteMetaEntity;
 import com.sitionix.wagssox.infrastructure.postgresql.jpa.WorkspaceSiteMetaJpaRepository;
 import com.sitionix.wagssox.infrastructure.postgresql.mapper.WorkspaceSiteMetaInfraMapper;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -29,14 +28,6 @@ public class WorkspaceSiteMetaRepositoryImpl implements WorkspaceSiteMetaReposit
     public Optional<WorkspaceSiteMeta> findBySiteId(final UUID siteId) {
         return this.workspaceSiteMetaJpaRepository.findById(siteId)
                 .map(this.workspaceSiteMetaInfraMapper::asDomain);
-    }
-
-    @Override
-    public List<WorkspaceSiteMeta> findByOwnerUserId(final Long ownerUserId) {
-        return this.workspaceSiteMetaJpaRepository.findAllByOwnerUserIdOrderByUpdatedAtDesc(ownerUserId)
-                .stream()
-                .map(this.workspaceSiteMetaInfraMapper::asDomain)
-                .toList();
     }
 
     @Override

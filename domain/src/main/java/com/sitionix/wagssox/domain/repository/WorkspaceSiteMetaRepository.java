@@ -1,7 +1,6 @@
 package com.sitionix.wagssox.domain.repository;
 
 import com.sitionix.wagssox.domain.WorkspaceSiteMeta;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,14 +24,6 @@ public interface WorkspaceSiteMetaRepository {
      * @return optional metadata entry.
      */
     Optional<WorkspaceSiteMeta> findBySiteId(UUID siteId);
-
-    /**
-     * Loads all sites for an owner sorted for workspace listing.
-     *
-     * @param ownerUserId owner user identifier.
-     * @return list of projection rows for owner.
-     */
-    List<WorkspaceSiteMeta> findByOwnerUserId(Long ownerUserId);
 
     /**
      * Deletes metadata projection by site identifier.

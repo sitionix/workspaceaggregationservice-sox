@@ -1,162 +1,167 @@
 package com.sitionix.wagssox.pipe.sitemeta;
 
-import com.app_afesox.events.Metadata;
 import com.app_afesox.stsssox.events.sitemeta.SiteCreatedEvent;
 import com.app_afesox.stsssox.events.sitemeta.SiteDeletedEvent;
 import com.app_afesox.stsssox.events.sitemeta.SiteMetaEnvelope;
-import com.app_afesox.stsssox.events.sitemeta.SiteStatusDTO;
-import com.app_afesox.stsssox.events.sitemeta.SiteTypeDTO;
 import com.app_afesox.stsssox.events.sitemeta.SiteUpdatedEvent;
 import com.sitionix.wagssox.application.SiteMetaProjectionCommand;
 import com.sitionix.wagssox.domain.SiteMetaUpdate;
 import com.sitionix.wagssox.domain.WorkspaceSiteMeta;
 import com.sitionix.wagssox.domain.WorkspaceSiteMetaStatus;
 import com.sitionix.wagssox.domain.WorkspaceSiteMetaType;
-import com.sitionix.wagssox.pipe.sitemeta.mapper.EventMapper;
-import com.sitionix.wagssox.pipe.sitemeta.mapper.SiteCreatedEventMapperImpl;
-import com.sitionix.wagssox.pipe.sitemeta.mapper.SiteDeletedEventMapperImpl;
 import com.sitionix.wagssox.pipe.sitemeta.mapper.SiteMetaEventMapper;
-import com.sitionix.wagssox.pipe.sitemeta.mapper.SiteUpdatedEventMapperImpl;
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
 
+@ExtendWith(MockitoExtension.class)
 class SiteMetaConsumerTest {
 
-    private CapturingSiteMetaProjectionCommand capturingSiteMetaProjectionCommand;
+    @Mock
+    private SiteMetaProjectionCommand siteMetaProjectionCommand;
+
+    @Mock
+    private SiteMetaEventMapper siteMetaEventMapper;
+
     private SiteMetaConsumer siteMetaConsumer;
 
     @BeforeEach
     void setUp() {
-        this.capturingSiteMetaProjectionCommand = new CapturingSiteMetaProjectionCommand();
-        final EventMapper<?, ?> siteCreatedEventMapper = new SiteCreatedEventMapperImpl();
-        final EventMapper<?, ?> siteUpdatedEventMapper = new SiteUpdatedEventMapperImpl();
-        final EventMapper<?, ?> siteDeletedEventMapper = new SiteDeletedEventMapperImpl();
-        final SiteMetaEventMapper siteMetaEventMapper = new SiteMetaEventMapper(
-                List.of(siteCreatedEventMapper, siteUpdatedEventMapper, siteDeletedEventMapper)
-        );
-        this.siteMetaConsumer = new SiteMetaConsumer(this.capturingSiteMetaProjectionCommand, siteMetaEventMapper);
+        this.siteMetaConsumer = new SiteMetaConsumer(this.siteMetaProjectionCommand, this.siteMetaEventMapper);
+    }
+
+    @AfterEach
+    void tearDown() {
+        verifyNoMoreInteractions(this.siteMetaProjectionCommand, this.siteMetaEventMapper);
+    }
+
+    @Test
+    void givenNullEnvelope_whenConsumeSiteMeta_thenSkipAllInteractions() {
+        //when
+        this.siteMetaConsumer.consumeSiteMeta(null);
+
+        //then
+    }
+
+    @Test
+    void givenEnvelopeWithNullPayload_whenConsumeSiteMeta_thenSkipAllInteractions() {
+        //given
+        final SiteMetaEnvelope envelope = mock(SiteMetaEnvelope.class);
+        when(envelope.getPayload()).thenReturn(null);
+
+        //when
+        this.siteMetaConsumer.consumeSiteMeta(envelope);
+
+        //then
+        verify(envelope).getPayload();
+        verifyNoMoreInteractions(envelope);
     }
 
     @Test
     void givenCreatedPayload_whenConsumeSiteMeta_thenApplySiteCreatedProjection() {
         //given
-        final SiteCreatedEvent siteCreatedEvent = SiteCreatedEvent.newBuilder()
-                .setSiteId("55db7314-63a5-49b5-bdb6-6a6cc59e61b9")
-                .setOwnerUserId(17L)
-                .setName("Site A")
-                .setStatus(SiteStatusDTO.DRAFT)
-                .setType(SiteTypeDTO.BLOG)
-                .setDescription("Description")
-                .setCreatedAt("2026-02-18T10:00:00Z")
-                .setUpdatedAt("2026-02-18T10:00:00Z")
-                .build();
-        final SiteMetaEnvelope siteMetaEnvelope = this.getEnvelope(siteCreatedEvent);
+        final SiteMetaEnvelope envelope = mock(SiteMetaEnvelope.class);
+        final SiteCreatedEvent payload = mock(SiteCreatedEvent.class);
+        final WorkspaceSiteMeta projected = this.getWorkspaceSiteMeta();
+        when(envelope.getPayload()).thenReturn(payload);
+        when(this.siteMetaEventMapper.asProjection(payload, WorkspaceSiteMeta.class)).thenReturn(projected);
 
         //when
-        this.siteMetaConsumer.consumeSiteMeta(siteMetaEnvelope);
+        this.siteMetaConsumer.consumeSiteMeta(envelope);
 
         //then
-        assertThat(this.capturingSiteMetaProjectionCommand.createdSiteMeta).isNotNull();
-        assertThat(this.capturingSiteMetaProjectionCommand.createdSiteMeta.siteId())
-                .isEqualTo(UUID.fromString("55db7314-63a5-49b5-bdb6-6a6cc59e61b9"));
-        assertThat(this.capturingSiteMetaProjectionCommand.createdSiteMeta.ownerUserId()).isEqualTo(17L);
+        verify(envelope, times(2)).getPayload();
+        verify(this.siteMetaEventMapper).asProjection(payload, WorkspaceSiteMeta.class);
+        verify(this.siteMetaProjectionCommand).applySiteCreated(projected);
+        verifyNoMoreInteractions(envelope, payload);
     }
 
     @Test
     void givenUpdatedPayload_whenConsumeSiteMeta_thenApplySiteUpdatedProjection() {
         //given
-        final SiteUpdatedEvent siteUpdatedEvent = SiteUpdatedEvent.newBuilder()
-                .setSiteId("d66d5d41-a121-4347-a245-0082bf9c2038")
-                .setOwnerUserId(19L)
-                .setName("Site B")
-                .setStatus(SiteStatusDTO.PUBLISHED)
-                .setType(SiteTypeDTO.BUSINESS)
-                .setDescription("Updated")
-                .setUpdatedAt("2026-02-18T12:00:00Z")
-                .build();
-        final SiteMetaEnvelope siteMetaEnvelope = this.getEnvelope(siteUpdatedEvent);
+        final SiteMetaEnvelope envelope = mock(SiteMetaEnvelope.class);
+        final SiteUpdatedEvent payload = mock(SiteUpdatedEvent.class);
+        final SiteMetaUpdate projected = this.getSiteMetaUpdate();
+        when(envelope.getPayload()).thenReturn(payload);
+        when(this.siteMetaEventMapper.asProjection(payload, SiteMetaUpdate.class)).thenReturn(projected);
 
         //when
-        this.siteMetaConsumer.consumeSiteMeta(siteMetaEnvelope);
+        this.siteMetaConsumer.consumeSiteMeta(envelope);
 
         //then
-        assertThat(this.capturingSiteMetaProjectionCommand.updatedSiteId)
-                .isEqualTo(UUID.fromString("d66d5d41-a121-4347-a245-0082bf9c2038"));
-        assertThat(this.capturingSiteMetaProjectionCommand.updatedOwnerUserId).isEqualTo(19L);
-        assertThat(this.capturingSiteMetaProjectionCommand.updatedName).isEqualTo("Site B");
-        assertThat(this.capturingSiteMetaProjectionCommand.updatedStatus).isEqualTo(WorkspaceSiteMetaStatus.PUBLISHED);
-        assertThat(this.capturingSiteMetaProjectionCommand.updatedType).isEqualTo(WorkspaceSiteMetaType.BUSINESS);
-        assertThat(this.capturingSiteMetaProjectionCommand.updatedDescription).isEqualTo("Updated");
-        assertThat(this.capturingSiteMetaProjectionCommand.updatedAt).isEqualTo(Instant.parse("2026-02-18T12:00:00Z"));
+        verify(envelope, times(2)).getPayload();
+        verify(this.siteMetaEventMapper).asProjection(payload, SiteMetaUpdate.class);
+        verify(this.siteMetaProjectionCommand).applySiteUpdated(projected);
+        verifyNoMoreInteractions(envelope, payload);
     }
 
     @Test
     void givenDeletedPayload_whenConsumeSiteMeta_thenApplySiteDeletedProjection() {
         //given
-        final SiteDeletedEvent siteDeletedEvent = SiteDeletedEvent.newBuilder()
-                .setSiteId("cf43e355-f67a-426d-9986-9f55fe3934ff")
-                .setOwnerUserId(25L)
-                .setDeletedAt("2026-02-18T12:10:00Z")
-                .build();
-        final SiteMetaEnvelope siteMetaEnvelope = this.getEnvelope(siteDeletedEvent);
+        final SiteMetaEnvelope envelope = mock(SiteMetaEnvelope.class);
+        final SiteDeletedEvent payload = mock(SiteDeletedEvent.class);
+        final UUID siteId = UUID.fromString("cf43e355-f67a-426d-9986-9f55fe3934ff");
+        when(envelope.getPayload()).thenReturn(payload);
+        when(this.siteMetaEventMapper.asProjection(payload, UUID.class)).thenReturn(siteId);
 
         //when
-        this.siteMetaConsumer.consumeSiteMeta(siteMetaEnvelope);
+        this.siteMetaConsumer.consumeSiteMeta(envelope);
 
         //then
-        assertThat(this.capturingSiteMetaProjectionCommand.deletedSiteId)
-                .isEqualTo(UUID.fromString("cf43e355-f67a-426d-9986-9f55fe3934ff"));
+        verify(envelope, times(2)).getPayload();
+        verify(this.siteMetaEventMapper).asProjection(payload, UUID.class);
+        verify(this.siteMetaProjectionCommand).applySiteDeleted(siteId);
+        verifyNoMoreInteractions(envelope, payload);
     }
 
-    private SiteMetaEnvelope getEnvelope(final Object payload) {
-        return SiteMetaEnvelope.newBuilder()
-                .setMetadata(
-                        Metadata.newBuilder()
-                                .setIdempotencyId(UUID.randomUUID().toString())
-                                .setCreatedAt(Instant.now().toEpochMilli())
-                                .setEventType("SITE_META_TEST")
-                                .build()
-                )
-                .setPayload(payload)
-                .build();
+    @Test
+    void givenUnsupportedPayload_whenConsumeSiteMeta_thenSkipProjectionCommand() {
+        //given
+        final SiteMetaEnvelope envelope = mock(SiteMetaEnvelope.class);
+        final Object payload = mock(Object.class);
+        when(envelope.getPayload()).thenReturn(payload);
+
+        //when
+        this.siteMetaConsumer.consumeSiteMeta(envelope);
+
+        //then
+        verify(envelope, times(2)).getPayload();
+        verifyNoMoreInteractions(envelope, payload);
     }
 
-    private static final class CapturingSiteMetaProjectionCommand implements SiteMetaProjectionCommand {
+    private WorkspaceSiteMeta getWorkspaceSiteMeta() {
+        return new WorkspaceSiteMeta(
+                UUID.fromString("55db7314-63a5-49b5-bdb6-6a6cc59e61b9"),
+                17L,
+                "Site A",
+                WorkspaceSiteMetaStatus.DRAFT,
+                WorkspaceSiteMetaType.BLOG,
+                "Description",
+                Instant.parse("2026-02-18T10:00:00Z"),
+                Instant.parse("2026-02-18T10:00:00Z")
+        );
+    }
 
-        private WorkspaceSiteMeta createdSiteMeta;
-        private UUID updatedSiteId;
-        private Long updatedOwnerUserId;
-        private String updatedName;
-        private WorkspaceSiteMetaStatus updatedStatus;
-        private WorkspaceSiteMetaType updatedType;
-        private String updatedDescription;
-        private Instant updatedAt;
-        private UUID deletedSiteId;
-
-        @Override
-        public void applySiteCreated(final WorkspaceSiteMeta siteMeta) {
-            this.createdSiteMeta = siteMeta;
-        }
-
-        @Override
-        public void applySiteUpdated(final SiteMetaUpdate siteMetaUpdate) {
-            this.updatedSiteId = siteMetaUpdate.siteId();
-            this.updatedOwnerUserId = siteMetaUpdate.ownerUserId();
-            this.updatedName = siteMetaUpdate.name();
-            this.updatedStatus = siteMetaUpdate.status();
-            this.updatedType = siteMetaUpdate.type();
-            this.updatedDescription = siteMetaUpdate.description();
-            this.updatedAt = siteMetaUpdate.updatedAt();
-        }
-
-        @Override
-        public void applySiteDeleted(final UUID siteId) {
-            this.deletedSiteId = siteId;
-        }
+    private SiteMetaUpdate getSiteMetaUpdate() {
+        return new SiteMetaUpdate(
+                UUID.fromString("d66d5d41-a121-4347-a245-0082bf9c2038"),
+                19L,
+                "Site B",
+                WorkspaceSiteMetaStatus.PUBLISHED,
+                WorkspaceSiteMetaType.BUSINESS,
+                "Updated",
+                Instant.parse("2026-02-18T12:00:00Z")
+        );
     }
 }

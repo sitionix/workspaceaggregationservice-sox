@@ -6,107 +6,150 @@ import com.sitionix.wagssox.domain.WorkspaceSiteMetaStatus;
 import com.sitionix.wagssox.domain.WorkspaceSiteMetaType;
 import com.sitionix.wagssox.domain.repository.WorkspaceSiteMetaRepository;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class SiteMetaProjectionCommandImplTest {
 
-    private InMemoryWorkspaceSiteMetaRepository inMemoryWorkspaceSiteMetaRepository;
+    @Mock
+    private WorkspaceSiteMetaRepository workspaceSiteMetaRepository;
+
     private SiteMetaProjectionCommandImpl siteMetaProjectionCommand;
 
     @BeforeEach
     void setUp() {
-        this.inMemoryWorkspaceSiteMetaRepository = new InMemoryWorkspaceSiteMetaRepository();
-        this.siteMetaProjectionCommand = new SiteMetaProjectionCommandImpl(this.inMemoryWorkspaceSiteMetaRepository);
+        this.siteMetaProjectionCommand = new SiteMetaProjectionCommandImpl(this.workspaceSiteMetaRepository);
+    }
+
+    @AfterEach
+    void tearDown() {
+        verifyNoMoreInteractions(this.workspaceSiteMetaRepository);
     }
 
     @Test
     void givenSiteMeta_whenApplySiteCreated_thenSaveProjection() {
         //given
-        final WorkspaceSiteMeta siteMeta = this.getWorkspaceSiteMeta("Site A", Instant.parse("2026-02-18T10:00:00Z"));
+        final WorkspaceSiteMeta siteMeta = this.getWorkspaceSiteMeta(
+                UUID.fromString("353ef6f8-6b77-45bc-ab22-f3ecf5f8b905"),
+                42L,
+                "Site A",
+                WorkspaceSiteMetaStatus.DRAFT,
+                WorkspaceSiteMetaType.PORTFOLIO,
+                "Description",
+                Instant.parse("2026-02-18T08:00:00Z"),
+                Instant.parse("2026-02-18T10:00:00Z")
+        );
 
         //when
         this.siteMetaProjectionCommand.applySiteCreated(siteMeta);
 
         //then
-        final Optional<WorkspaceSiteMeta> actual = this.inMemoryWorkspaceSiteMetaRepository.findBySiteId(siteMeta.siteId());
-        assertThat(actual).contains(siteMeta);
-    }
-
-    @Test
-    void givenExistingSiteMeta_whenApplySiteUpdated_thenMergeAndSaveProjection() {
-        //given
-        final UUID siteId = UUID.randomUUID();
-        final WorkspaceSiteMeta existing = this.getWorkspaceSiteMeta(siteId, "Old Name", Instant.parse("2026-02-18T09:00:00Z"));
-        final Instant updatedAt = Instant.parse("2026-02-18T11:00:00Z");
-        this.inMemoryWorkspaceSiteMetaRepository.save(existing);
-
-        //when
-        this.siteMetaProjectionCommand.applySiteUpdated(new SiteMetaUpdate(
-                siteId,
-                existing.ownerUserId(),
-                "New Name",
-                WorkspaceSiteMetaStatus.PUBLISHED,
-                null,
-                null,
-                updatedAt));
-
-        //then
-        final WorkspaceSiteMeta actual = this.inMemoryWorkspaceSiteMetaRepository.findBySiteId(siteId).orElseThrow();
-        assertThat(actual.siteId()).isEqualTo(siteId);
-        assertThat(actual.ownerUserId()).isEqualTo(existing.ownerUserId());
-        assertThat(actual.name()).isEqualTo("New Name");
-        assertThat(actual.status()).isEqualTo(WorkspaceSiteMetaStatus.PUBLISHED);
-        assertThat(actual.type()).isEqualTo(existing.type());
-        assertThat(actual.description()).isEqualTo(existing.description());
-        assertThat(actual.createdAt()).isEqualTo(existing.createdAt());
-        assertThat(actual.updatedAt()).isEqualTo(updatedAt);
+        verify(this.workspaceSiteMetaRepository).save(siteMeta);
     }
 
     @Test
     void givenMissingSiteMeta_whenApplySiteUpdated_thenCreateProjectionFromUpdate() {
         //given
-        final UUID siteId = UUID.randomUUID();
-        final Long ownerUserId = 55L;
+        final UUID siteId = UUID.fromString("3db551f5-98f2-4f9a-b4f5-a5e8f2f13fcb");
         final Instant updatedAt = Instant.parse("2026-02-18T11:30:00Z");
-
-        //when
-        this.siteMetaProjectionCommand.applySiteUpdated(new SiteMetaUpdate(
+        final SiteMetaUpdate siteMetaUpdate = this.getSiteMetaUpdate(
                 siteId,
-                ownerUserId,
+                55L,
                 "Projected Site",
                 WorkspaceSiteMetaStatus.DRAFT,
                 WorkspaceSiteMetaType.BLOG,
                 "From update",
-                updatedAt));
+                updatedAt
+        );
+        final WorkspaceSiteMeta expected = this.getWorkspaceSiteMeta(
+                siteId,
+                55L,
+                "Projected Site",
+                WorkspaceSiteMetaStatus.DRAFT,
+                WorkspaceSiteMetaType.BLOG,
+                "From update",
+                updatedAt,
+                updatedAt
+        );
+        when(this.workspaceSiteMetaRepository.findBySiteId(siteId)).thenReturn(Optional.empty());
+
+        //when
+        this.siteMetaProjectionCommand.applySiteUpdated(siteMetaUpdate);
 
         //then
-        final WorkspaceSiteMeta actual = this.inMemoryWorkspaceSiteMetaRepository.findBySiteId(siteId).orElseThrow();
-        assertThat(actual.siteId()).isEqualTo(siteId);
-        assertThat(actual.ownerUserId()).isEqualTo(ownerUserId);
-        assertThat(actual.name()).isEqualTo("Projected Site");
-        assertThat(actual.status()).isEqualTo(WorkspaceSiteMetaStatus.DRAFT);
-        assertThat(actual.type()).isEqualTo(WorkspaceSiteMetaType.BLOG);
-        assertThat(actual.description()).isEqualTo("From update");
-        assertThat(actual.createdAt()).isEqualTo(updatedAt);
-        assertThat(actual.updatedAt()).isEqualTo(updatedAt);
+        verify(this.workspaceSiteMetaRepository).findBySiteId(siteId);
+        verify(this.workspaceSiteMetaRepository).save(expected);
+    }
+
+    @Test
+    void givenExistingSiteMetaWithSameOwner_whenApplySiteUpdated_thenMergeAndSaveProjection() {
+        //given
+        final UUID siteId = UUID.fromString("7adf7f5f-a55e-4688-810d-3ca8a4bb9cd4");
+        final WorkspaceSiteMeta existing = this.getWorkspaceSiteMeta(
+                siteId,
+                42L,
+                "Old Name",
+                WorkspaceSiteMetaStatus.DRAFT,
+                WorkspaceSiteMetaType.PORTFOLIO,
+                "Old description",
+                Instant.parse("2026-02-18T08:00:00Z"),
+                Instant.parse("2026-02-18T09:00:00Z")
+        );
+        final SiteMetaUpdate siteMetaUpdate = this.getSiteMetaUpdate(
+                siteId,
+                42L,
+                "New Name",
+                WorkspaceSiteMetaStatus.PUBLISHED,
+                null,
+                null,
+                Instant.parse("2026-02-18T11:00:00Z")
+        );
+        final WorkspaceSiteMeta expected = this.getWorkspaceSiteMeta(
+                siteId,
+                42L,
+                "New Name",
+                WorkspaceSiteMetaStatus.PUBLISHED,
+                WorkspaceSiteMetaType.PORTFOLIO,
+                "Old description",
+                Instant.parse("2026-02-18T08:00:00Z"),
+                Instant.parse("2026-02-18T11:00:00Z")
+        );
+        when(this.workspaceSiteMetaRepository.findBySiteId(siteId)).thenReturn(Optional.of(existing));
+
+        //when
+        this.siteMetaProjectionCommand.applySiteUpdated(siteMetaUpdate);
+
+        //then
+        verify(this.workspaceSiteMetaRepository).findBySiteId(siteId);
+        verify(this.workspaceSiteMetaRepository).save(expected);
     }
 
     @Test
     void givenExistingSiteMetaWithDifferentOwner_whenApplySiteUpdated_thenSkipProjectionUpdate() {
         //given
-        final UUID siteId = UUID.randomUUID();
-        final WorkspaceSiteMeta existing = this.getWorkspaceSiteMeta(siteId, "Owner Locked", Instant.parse("2026-02-18T09:30:00Z"));
-        this.inMemoryWorkspaceSiteMetaRepository.save(existing);
-        final SiteMetaUpdate siteMetaUpdate = new SiteMetaUpdate(
+        final UUID siteId = UUID.fromString("4559bc29-c6eb-4fdd-89d2-591dfb760f37");
+        final WorkspaceSiteMeta existing = this.getWorkspaceSiteMeta(
+                siteId,
+                42L,
+                "Owner Locked",
+                WorkspaceSiteMetaStatus.DRAFT,
+                WorkspaceSiteMetaType.PORTFOLIO,
+                "Description",
+                Instant.parse("2026-02-18T08:00:00Z"),
+                Instant.parse("2026-02-18T09:30:00Z")
+        );
+        final SiteMetaUpdate siteMetaUpdate = this.getSiteMetaUpdate(
                 siteId,
                 999L,
                 "Should Not Apply",
@@ -115,74 +158,66 @@ class SiteMetaProjectionCommandImplTest {
                 "Should Not Apply",
                 Instant.parse("2026-02-18T12:30:00Z")
         );
+        when(this.workspaceSiteMetaRepository.findBySiteId(siteId)).thenReturn(Optional.of(existing));
 
         //when
         this.siteMetaProjectionCommand.applySiteUpdated(siteMetaUpdate);
 
         //then
-        final WorkspaceSiteMeta actual = this.inMemoryWorkspaceSiteMetaRepository.findBySiteId(siteId).orElseThrow();
-        assertThat(actual).isEqualTo(existing);
+        verify(this.workspaceSiteMetaRepository).findBySiteId(siteId);
     }
 
     @Test
     void givenSiteId_whenApplySiteDeleted_thenDeleteProjection() {
         //given
-        final WorkspaceSiteMeta siteMeta = this.getWorkspaceSiteMeta("Delete me", Instant.parse("2026-02-18T12:10:00Z"));
-        this.inMemoryWorkspaceSiteMetaRepository.save(siteMeta);
+        final UUID siteId = UUID.fromString("3600b638-ed8c-47e5-845e-228f7f08a856");
 
         //when
-        this.siteMetaProjectionCommand.applySiteDeleted(siteMeta.siteId());
+        this.siteMetaProjectionCommand.applySiteDeleted(siteId);
 
         //then
-        assertThat(this.inMemoryWorkspaceSiteMetaRepository.findBySiteId(siteMeta.siteId())).isEmpty();
+        verify(this.workspaceSiteMetaRepository).deleteBySiteId(siteId);
     }
 
-    private WorkspaceSiteMeta getWorkspaceSiteMeta(final String name, final Instant updatedAt) {
-        return this.getWorkspaceSiteMeta(UUID.randomUUID(), name, updatedAt);
-    }
-
-    private WorkspaceSiteMeta getWorkspaceSiteMeta(final UUID siteId, final String name, final Instant updatedAt) {
+    private WorkspaceSiteMeta getWorkspaceSiteMeta(
+            final UUID siteId,
+            final Long ownerUserId,
+            final String name,
+            final WorkspaceSiteMetaStatus status,
+            final WorkspaceSiteMetaType type,
+            final String description,
+            final Instant createdAt,
+            final Instant updatedAt
+    ) {
         return new WorkspaceSiteMeta(
                 siteId,
-                42L,
+                ownerUserId,
                 name,
-                WorkspaceSiteMetaStatus.DRAFT,
-                WorkspaceSiteMetaType.PORTFOLIO,
-                "Description",
-                Instant.parse("2026-02-18T08:00:00Z"),
+                status,
+                type,
+                description,
+                createdAt,
                 updatedAt
         );
     }
 
-    private static class InMemoryWorkspaceSiteMetaRepository implements WorkspaceSiteMetaRepository {
-
-        private final Map<UUID, WorkspaceSiteMeta> storage = new HashMap<>();
-
-        @Override
-        public WorkspaceSiteMeta save(final WorkspaceSiteMeta siteMeta) {
-            this.storage.put(siteMeta.siteId(), siteMeta);
-            return siteMeta;
-        }
-
-        @Override
-        public Optional<WorkspaceSiteMeta> findBySiteId(final UUID siteId) {
-            return Optional.ofNullable(this.storage.get(siteId));
-        }
-
-        @Override
-        public List<WorkspaceSiteMeta> findByOwnerUserId(final Long ownerUserId) {
-            final List<WorkspaceSiteMeta> siteMetas = new ArrayList<>();
-            for (WorkspaceSiteMeta siteMeta : this.storage.values()) {
-                if (siteMeta.ownerUserId().equals(ownerUserId)) {
-                    siteMetas.add(siteMeta);
-                }
-            }
-            return siteMetas;
-        }
-
-        @Override
-        public void deleteBySiteId(final UUID siteId) {
-            this.storage.remove(siteId);
-        }
+    private SiteMetaUpdate getSiteMetaUpdate(
+            final UUID siteId,
+            final Long ownerUserId,
+            final String name,
+            final WorkspaceSiteMetaStatus status,
+            final WorkspaceSiteMetaType type,
+            final String description,
+            final Instant updatedAt
+    ) {
+        return new SiteMetaUpdate(
+                siteId,
+                ownerUserId,
+                name,
+                status,
+                type,
+                description,
+                updatedAt
+        );
     }
 }
