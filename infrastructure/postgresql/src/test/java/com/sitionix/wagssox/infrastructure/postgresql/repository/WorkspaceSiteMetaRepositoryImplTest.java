@@ -1,6 +1,7 @@
 package com.sitionix.wagssox.infrastructure.postgresql.repository;
 
 import com.sitionix.wagssox.domain.WorkspaceSiteMeta;
+import com.sitionix.wagssox.domain.WorkspaceSiteMetaSlice;
 import com.sitionix.wagssox.infrastructure.postgresql.entity.WorkspaceSiteMetaEntity;
 import com.sitionix.wagssox.infrastructure.postgresql.jpa.WorkspaceSiteMetaJpaRepository;
 import com.sitionix.wagssox.infrastructure.postgresql.mapper.WorkspaceSiteMetaInfraMapper;
@@ -14,7 +15,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.SliceImpl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -92,21 +95,29 @@ class WorkspaceSiteMetaRepositoryImplTest {
         //given
         final Long userId = 123L;
         final Integer page = 1;
-        final Integer size = 21;
+        final Integer size = 20;
         final WorkspaceSiteMetaEntity entity = mock(WorkspaceSiteMetaEntity.class);
         final WorkspaceSiteMeta mapped = mock(WorkspaceSiteMeta.class);
+        final WorkspaceSiteMetaSlice expected = WorkspaceSiteMetaSlice.builder()
+                .items(List.of(mapped))
+                .hasNext(true)
+                .build();
         when(this.workspaceSiteMetaJpaRepository.findByUserIdAndStatus_IdNotAndDeletedAtIsNull(
                 eq(userId),
                 eq(3L),
                 any(Pageable.class)
-        )).thenReturn(List.of(entity));
+        )).thenReturn(new SliceImpl<>(
+                List.of(entity),
+                PageRequest.of(page, size),
+                true
+        ));
         when(this.workspaceSiteMetaInfraMapper.asDomain(entity)).thenReturn(mapped);
 
         //when
-        final List<WorkspaceSiteMeta> actual = this.workspaceSiteMetaRepository.findActiveByUserId(userId, page, size);
+        final WorkspaceSiteMetaSlice actual = this.workspaceSiteMetaRepository.findActiveByUserId(userId, page, size);
 
         //then
-        assertThat(actual).isEqualTo(List.of(mapped));
+        assertThat(actual).isEqualTo(expected);
 
         final ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
         verify(this.workspaceSiteMetaJpaRepository).findByUserIdAndStatus_IdNotAndDeletedAtIsNull(

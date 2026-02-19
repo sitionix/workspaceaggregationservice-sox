@@ -1,7 +1,7 @@
 package com.sitionix.wagssox.api.handler;
 
 import com.app_afesox.wagssox.api_first.dto.ErrorDTO;
-import java.util.Objects;
+import com.sitionix.wagssox.domain.exception.AuthenticationRequiredException;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,23 +13,17 @@ import org.springframework.web.method.annotation.HandlerMethodValidationExceptio
 @RestControllerAdvice
 public class RestExceptionHandler {
 
+    @ExceptionHandler(AuthenticationRequiredException.class)
+    public ResponseEntity<ErrorDTO> handleAuthenticationRequired(final AuthenticationRequiredException exception) {
+        return this.buildError(HttpStatus.UNAUTHORIZED, exception.getMessage());
+    }
+
     @ExceptionHandler(HandlerMethodValidationException.class)
     public ResponseEntity<ErrorDTO> handleHandlerMethodValidationException(final HandlerMethodValidationException ex) {
         final String details = ex.getAllValidationResults().stream()
                 .findFirst()
-                .map(result -> {
-                    final int parameterIndex = result.getMethodParameter().getParameterIndex();
-                    if (Objects.equals(parameterIndex, 1)) {
-                        return "size must be 20";
-                    }
-                    if (Objects.equals(parameterIndex, 2)) {
-                        return "page must be >= 0";
-                    }
-                    return result.getResolvableErrors().stream()
-                            .findFirst()
-                            .map(MessageSourceResolvable::getDefaultMessage)
-                            .orElse("Validation failed");
-                })
+                .flatMap(result -> result.getResolvableErrors().stream().findFirst())
+                .map(MessageSourceResolvable::getDefaultMessage)
                 .orElse("Validation failed");
         return this.buildError(HttpStatus.BAD_REQUEST, details);
     }
@@ -38,13 +32,7 @@ public class RestExceptionHandler {
     public ResponseEntity<ErrorDTO> handleMissingServletRequestParameterException(
             final MissingServletRequestParameterException ex
     ) {
-        if (Objects.equals(ex.getParameterName(), "userId")) {
-            return this.buildError(HttpStatus.BAD_REQUEST, "userId is required");
-        }
-        if (Objects.equals(ex.getParameterName(), "size")) {
-            return this.buildError(HttpStatus.BAD_REQUEST, "size is required");
-        }
-        return this.buildError(HttpStatus.BAD_REQUEST, "Required request parameter is missing");
+        return this.buildError(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

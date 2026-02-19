@@ -18,11 +18,10 @@ public class SiteController implements SiteApi {
 
     @Override
     public ResponseEntity<WorkspaceSitesPageDTO> getSites(
-            final Long userId,
             final Integer size,
             final Integer page
     ) {
-        final WorkspaceSitesPage response = this.getWorkspaceSites.execute(userId, page, size);
+        final WorkspaceSitesPage response = this.getWorkspaceSites.execute(page, size);
         return ResponseEntity.ok(this.siteApiMapper.asWorkspaceSitesPageDTO(response));
     }
 }

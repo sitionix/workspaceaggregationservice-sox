@@ -1,6 +1,7 @@
 package com.sitionix.wagssox.api.handler;
 
 import com.app_afesox.wagssox.api_first.dto.ErrorDTO;
+import com.sitionix.wagssox.domain.exception.AuthenticationRequiredException;
 import java.lang.reflect.Method;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +27,24 @@ class RestExceptionHandlerTest {
     }
 
     @Test
+    void givenAuthenticationRequiredException_whenHandleAuthenticationRequired_thenReturnUnauthorizedErrorDto() {
+        //given
+        final AuthenticationRequiredException exception = new AuthenticationRequiredException("Authentication required");
+        final ResponseEntity<ErrorDTO> expected = ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ErrorDTO.builder()
+                        .code(401)
+                        .title("Unauthorized")
+                        .details("Authentication required")
+                        .build());
+
+        //when
+        final ResponseEntity<ErrorDTO> actual = this.restExceptionHandler.handleAuthenticationRequired(exception);
+
+        //then
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
     void givenIllegalArgumentException_whenHandleIllegalArgumentException_thenReturnBadRequestErrorDto() {
         //given
         final IllegalArgumentException exception = new IllegalArgumentException("size must be 20");
@@ -44,14 +63,14 @@ class RestExceptionHandlerTest {
     }
 
     @Test
-    void givenMissingUserIdParameter_whenHandleMissingServletRequestParameterException_thenReturnBadRequestErrorDto() {
+    void givenMissingSizeParameter_whenHandleMissingServletRequestParameterException_thenReturnBadRequestErrorDto() {
         //given
-        final MissingServletRequestParameterException exception = new MissingServletRequestParameterException("userId", "Long");
+        final MissingServletRequestParameterException exception = new MissingServletRequestParameterException("size", "Integer");
         final ResponseEntity<ErrorDTO> expected = ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ErrorDTO.builder()
                         .code(400)
                         .title("Bad Request")
-                        .details("userId is required")
+                        .details(exception.getMessage())
                         .build());
 
         //when
@@ -66,7 +85,7 @@ class RestExceptionHandlerTest {
     void givenSizeValidationFailure_whenHandleHandlerMethodValidationException_thenReturnBadRequestErrorDto() throws Exception {
         //given
         final HandlerMethodValidationException exception = this.getValidationException(
-                1,
+                0,
                 10,
                 "must be greater than or equal to 20"
         );
@@ -74,7 +93,7 @@ class RestExceptionHandlerTest {
                 .body(ErrorDTO.builder()
                         .code(400)
                         .title("Bad Request")
-                        .details("size must be 20")
+                        .details("must be greater than or equal to 20")
                         .build());
 
         //when
@@ -89,7 +108,7 @@ class RestExceptionHandlerTest {
     void givenPageValidationFailure_whenHandleHandlerMethodValidationException_thenReturnBadRequestErrorDto() throws Exception {
         //given
         final HandlerMethodValidationException exception = this.getValidationException(
-                2,
+                1,
                 -1,
                 "must be greater than or equal to 0"
         );
@@ -97,7 +116,7 @@ class RestExceptionHandlerTest {
                 .body(ErrorDTO.builder()
                         .code(400)
                         .title("Bad Request")
-                        .details("page must be >= 0")
+                        .details("must be greater than or equal to 0")
                         .build());
 
         //when
@@ -113,7 +132,7 @@ class RestExceptionHandlerTest {
             final Object argument,
             final String message
     ) throws Exception {
-        final Method method = ValidationTarget.class.getDeclaredMethod("getSites", Long.class, Integer.class, Integer.class);
+        final Method method = ValidationTarget.class.getDeclaredMethod("getSites", Integer.class, Integer.class);
         final MethodParameter methodParameter = new MethodParameter(method, parameterIndex);
         final ParameterValidationResult validationResult = new ParameterValidationResult(
                 methodParameter,
@@ -129,7 +148,7 @@ class RestExceptionHandlerTest {
     }
 
     private static final class ValidationTarget {
-        void getSites(final Long userId, final Integer size, final Integer page) {
+        void getSites(final Integer size, final Integer page) {
         }
     }
 }

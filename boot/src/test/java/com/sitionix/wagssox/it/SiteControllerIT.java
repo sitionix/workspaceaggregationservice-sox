@@ -2,6 +2,7 @@ package com.sitionix.wagssox.it;
 
 import com.sitionix.forgeit.core.test.IntegrationTest;
 import com.sitionix.forgeit.domain.contract.graph.DbGraphChain;
+import com.sitionix.forgeit.mockmvc.api.QueryParams;
 import com.sitionix.wagssox.infrastructure.postgresql.entity.WorkspaceSiteMetaEntity;
 import com.sitionix.wagssox.it.infra.ControllerEndpoint;
 import com.sitionix.wagssox.it.infra.DatabaseContract;
@@ -109,7 +110,11 @@ class SiteControllerIT {
 
         //when then
         this.testManager.mockMvc()
-                .ping(ControllerEndpoint.GET_SITES_FIRST_PAGE)
+                .ping(ControllerEndpoint.getSites())
+                .header("X-Forge-User-Sub", "123")
+                .withQueryParameters(QueryParams.create()
+                        .add("page", 0)
+                        .add("size", 20))
                 .andExpectPath(MockMvcResultMatchers.jsonPath("$.items.length()").value(20))
                 .andExpectPath(MockMvcResultMatchers.jsonPath("$.page").value(0))
                 .andExpectPath(MockMvcResultMatchers.jsonPath("$.size").value(20))
@@ -161,7 +166,11 @@ class SiteControllerIT {
 
         //when then
         this.testManager.mockMvc()
-                .ping(ControllerEndpoint.GET_SITES_NEXT_PAGE)
+                .ping(ControllerEndpoint.getSites())
+                .header("X-Forge-User-Sub", "123")
+                .withQueryParameters(QueryParams.create()
+                        .add("page", 1)
+                        .add("size", 20))
                 .andExpectPath(MockMvcResultMatchers.jsonPath("$.items.length()").value(5))
                 .andExpectPath(MockMvcResultMatchers.jsonPath("$.page").value(1))
                 .andExpectPath(MockMvcResultMatchers.jsonPath("$.size").value(20))
@@ -180,16 +189,21 @@ class SiteControllerIT {
     }
 
     @Test
-    @DisplayName("given missing userId when get sites then return bad request with validation error")
-    void givenMissingUserId_whenGetSites_thenReturnBadRequestWithValidationError() {
+    @DisplayName("given missing user context when get sites then return unauthorized")
+    void givenMissingUserContext_whenGetSites_thenReturnUnauthorized() {
         //given
 
         //when then
         this.testManager.mockMvc()
-                .ping(ControllerEndpoint.GET_SITES_MISSING_USER_ID)
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.BAD_REQUEST.value()))
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.title").value(HttpStatus.BAD_REQUEST.getReasonPhrase()))
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.details").value("userId is required"))
+                .ping(ControllerEndpoint.getSites())
+                .header("X-Forge-User-Sub", null)
+                .withQueryParameters(QueryParams.create()
+                        .add("page", 0)
+                        .add("size", 20))
+                .expectStatus(HttpStatus.UNAUTHORIZED)
+                .andExpectPath(MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.UNAUTHORIZED.value()))
+                .andExpectPath(MockMvcResultMatchers.jsonPath("$.title").value(HttpStatus.UNAUTHORIZED.getReasonPhrase()))
+                .andExpectPath(MockMvcResultMatchers.jsonPath("$.details").value("Authentication required"))
                 .assertDefault();
     }
 
@@ -200,10 +214,33 @@ class SiteControllerIT {
 
         //when then
         this.testManager.mockMvc()
-                .ping(ControllerEndpoint.GET_SITES_INVALID_SIZE)
+                .ping(ControllerEndpoint.getSites())
+                .header("X-Forge-User-Sub", "123")
+                .withQueryParameters(QueryParams.create()
+                        .add("page", 0)
+                        .add("size", 10))
+                .expectStatus(HttpStatus.BAD_REQUEST)
                 .andExpectPath(MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.BAD_REQUEST.value()))
                 .andExpectPath(MockMvcResultMatchers.jsonPath("$.title").value(HttpStatus.BAD_REQUEST.getReasonPhrase()))
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.details").value("size must be 20"))
+                .andExpectPath(MockMvcResultMatchers.jsonPath("$.details").isNotEmpty())
+                .assertDefault();
+    }
+
+    @Test
+    @DisplayName("given missing size when get sites then return bad request with validation error")
+    void givenMissingSize_whenGetSites_thenReturnBadRequestWithValidationError() {
+        //given
+
+        //when then
+        this.testManager.mockMvc()
+                .ping(ControllerEndpoint.getSites())
+                .header("X-Forge-User-Sub", "123")
+                .withQueryParameters(QueryParams.create()
+                        .add("page", 0))
+                .expectStatus(HttpStatus.BAD_REQUEST)
+                .andExpectPath(MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.BAD_REQUEST.value()))
+                .andExpectPath(MockMvcResultMatchers.jsonPath("$.title").value(HttpStatus.BAD_REQUEST.getReasonPhrase()))
+                .andExpectPath(MockMvcResultMatchers.jsonPath("$.details").isNotEmpty())
                 .assertDefault();
     }
 
@@ -214,10 +251,15 @@ class SiteControllerIT {
 
         //when then
         this.testManager.mockMvc()
-                .ping(ControllerEndpoint.GET_SITES_NEGATIVE_PAGE)
+                .ping(ControllerEndpoint.getSites())
+                .header("X-Forge-User-Sub", "123")
+                .withQueryParameters(QueryParams.create()
+                        .add("page", -1)
+                        .add("size", 20))
+                .expectStatus(HttpStatus.BAD_REQUEST)
                 .andExpectPath(MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.BAD_REQUEST.value()))
                 .andExpectPath(MockMvcResultMatchers.jsonPath("$.title").value(HttpStatus.BAD_REQUEST.getReasonPhrase()))
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.details").value("page must be >= 0"))
+                .andExpectPath(MockMvcResultMatchers.jsonPath("$.details").isNotEmpty())
                 .assertDefault();
     }
 }

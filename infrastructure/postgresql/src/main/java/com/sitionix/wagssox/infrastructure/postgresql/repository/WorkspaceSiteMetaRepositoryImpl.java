@@ -1,17 +1,18 @@
 package com.sitionix.wagssox.infrastructure.postgresql.repository;
 
 import com.sitionix.wagssox.domain.WorkspaceSiteMeta;
+import com.sitionix.wagssox.domain.WorkspaceSiteMetaSlice;
 import com.sitionix.wagssox.domain.WorkspaceSiteMetaStatus;
 import com.sitionix.wagssox.domain.repository.WorkspaceSiteMetaRepository;
 import com.sitionix.wagssox.infrastructure.postgresql.entity.WorkspaceSiteMetaEntity;
 import com.sitionix.wagssox.infrastructure.postgresql.jpa.WorkspaceSiteMetaJpaRepository;
 import com.sitionix.wagssox.infrastructure.postgresql.mapper.WorkspaceSiteMetaInfraMapper;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -35,13 +36,18 @@ public class WorkspaceSiteMetaRepositoryImpl implements WorkspaceSiteMetaReposit
     }
 
     @Override
-    public List<WorkspaceSiteMeta> findActiveByUserId(final Long userId, final Integer page, final Integer size) {
-        return this.workspaceSiteMetaJpaRepository.findByUserIdAndStatus_IdNotAndDeletedAtIsNull(
-                        userId,
-                        WorkspaceSiteMetaStatus.ARCHIVED.getId(),
-                        PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "updatedAt"))
-                ).stream()
-                .map(this.workspaceSiteMetaInfraMapper::asDomain)
-                .toList();
+    public WorkspaceSiteMetaSlice findActiveByUserId(final Long userId, final Integer page, final Integer size) {
+        final Slice<WorkspaceSiteMetaEntity> entities = this.workspaceSiteMetaJpaRepository.findByUserIdAndStatus_IdNotAndDeletedAtIsNull(
+                userId,
+                WorkspaceSiteMetaStatus.ARCHIVED.getId(),
+                PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "updatedAt"))
+        );
+
+        return WorkspaceSiteMetaSlice.builder()
+                .items(entities.getContent().stream()
+                        .map(this.workspaceSiteMetaInfraMapper::asDomain)
+                        .toList())
+                .hasNext(entities.hasNext())
+                .build();
     }
 }
