@@ -1,6 +1,7 @@
 package com.sitionix.wagssox.domain.repository;
 
 import com.sitionix.wagssox.domain.WorkspaceSiteMeta;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -24,5 +25,15 @@ public interface WorkspaceSiteMetaRepository {
      * @return optional metadata entry.
      */
     Optional<WorkspaceSiteMeta> findBySiteId(UUID siteId);
+
+    /**
+     * Loads active (non-archived and non-soft-deleted) site metadata for a user in descending update order.
+     *
+     * @param userId user identifier.
+     * @param page zero-based page number.
+     * @param size maximum number of records to load.
+     * @return ordered list of records.
+     */
+    List<WorkspaceSiteMeta> findActiveByUserId(Long userId, Integer page, Integer size);
 
 }
