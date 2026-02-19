@@ -5,10 +5,10 @@ import com.app_afesox.stsssox.events.sitemeta.SiteDeletedEvent;
 import com.app_afesox.stsssox.events.sitemeta.SiteMetaEnvelope;
 import com.app_afesox.stsssox.events.sitemeta.SiteUpdatedEvent;
 import com.sitionix.wagssox.application.SiteMetaProjectionCommand;
+import com.sitionix.wagssox.domain.SiteMetaDelete;
 import com.sitionix.wagssox.domain.SiteMetaUpdate;
 import com.sitionix.wagssox.domain.WorkspaceSiteMeta;
 import com.sitionix.wagssox.pipe.sitemeta.mapper.SiteMetaEventMapper;
-import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -106,17 +106,17 @@ class SiteMetaConsumerTest {
         //given
         final SiteMetaEnvelope envelope = mock(SiteMetaEnvelope.class);
         final SiteDeletedEvent payload = mock(SiteDeletedEvent.class);
-        final UUID siteId = UUID.fromString("cf43e355-f67a-426d-9986-9f55fe3934ff");
+        final SiteMetaDelete siteMetaDelete = mock(SiteMetaDelete.class);
         when(envelope.getPayload()).thenReturn(payload);
-        when(this.siteMetaEventMapper.asProjection(payload, UUID.class)).thenReturn(siteId);
+        when(this.siteMetaEventMapper.asProjection(payload, SiteMetaDelete.class)).thenReturn(siteMetaDelete);
 
         //when
         this.siteMetaConsumer.consumeSiteMeta(envelope);
 
         //then
         verify(envelope, times(2)).getPayload();
-        verify(this.siteMetaEventMapper).asProjection(payload, UUID.class);
-        verify(this.siteMetaProjectionCommand).applySiteDeleted(siteId);
+        verify(this.siteMetaEventMapper).asProjection(payload, SiteMetaDelete.class);
+        verify(this.siteMetaProjectionCommand).applySiteDeleted(siteMetaDelete);
         verifyNoMoreInteractions(envelope, payload);
     }
 

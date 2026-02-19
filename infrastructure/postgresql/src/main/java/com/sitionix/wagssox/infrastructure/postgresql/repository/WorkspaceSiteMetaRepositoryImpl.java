@@ -29,9 +29,4 @@ public class WorkspaceSiteMetaRepositoryImpl implements WorkspaceSiteMetaReposit
         return this.workspaceSiteMetaJpaRepository.findById(siteId)
                 .map(this.workspaceSiteMetaInfraMapper::asDomain);
     }
-
-    @Override
-    public void deleteBySiteId(final UUID siteId) {
-        this.workspaceSiteMetaJpaRepository.deleteById(siteId);
-    }
 }

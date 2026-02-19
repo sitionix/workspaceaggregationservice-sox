@@ -25,10 +25,4 @@ public interface WorkspaceSiteMetaRepository {
      */
     Optional<WorkspaceSiteMeta> findBySiteId(UUID siteId);
 
-    /**
-     * Deletes metadata projection by site identifier.
-     *
-     * @param siteId site identifier.
-     */
-    void deleteBySiteId(UUID siteId);
 }

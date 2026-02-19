@@ -6,5 +6,6 @@ CREATE TABLE IF NOT EXISTS workspace_site_meta (
     type_id BIGINT,
     description VARCHAR(160),
     created_at TIMESTAMPTZ NOT NULL,
-    updated_at TIMESTAMPTZ NOT NULL
+    updated_at TIMESTAMPTZ NOT NULL,
+    deleted_at TIMESTAMPTZ
 );

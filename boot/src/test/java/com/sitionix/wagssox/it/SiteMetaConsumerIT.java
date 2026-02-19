@@ -39,6 +39,7 @@ class SiteMetaConsumerIT {
                         .andExpected(entity -> Objects.equals(entity.getDescription(), "Description"))
                         .andExpected(entity -> Objects.equals(entity.getCreatedAt(), expectedCreatedAt))
                         .andExpected(entity -> Objects.equals(entity.getUpdatedAt(), expectedUpdatedAt))
+                        .andExpected(entity -> Objects.isNull(entity.getDeletedAt()))
                         .assertEntity());
     }
 
@@ -71,14 +72,16 @@ class SiteMetaConsumerIT {
                         .andExpected(entity -> Objects.equals(entity.getDescription(), "Updated description"))
                         .andExpected(entity -> Objects.equals(entity.getCreatedAt(), expectedCreatedAt))
                         .andExpected(entity -> Objects.equals(entity.getUpdatedAt(), expectedUpdatedAt))
+                        .andExpected(entity -> Objects.isNull(entity.getDeletedAt()))
                         .assertEntity());
     }
 
     @Test
-    @DisplayName("given site deleted event when consumed then projection deleted from postgresql")
-    void givenSiteDeletedEvent_whenConsumed_thenProjectionDeletedFromPostgresql() {
+    @DisplayName("given site deleted event when consumed then projection soft deleted in postgresql")
+    void givenSiteDeletedEvent_whenConsumed_thenProjectionSoftDeletedInPostgresql() {
         //given
         final UUID expectedSiteId = UUID.fromString("be8dbc7c-5d3f-4195-b6f5-80e36195fe5a");
+        final Instant expectedDeletedAt = Instant.parse("2026-02-18T12:10:00Z");
 
         this.testManager.postgresql()
                 .create()
@@ -92,6 +95,10 @@ class SiteMetaConsumerIT {
                 .publish(SiteMetaKafkaContracts.SITE_META_DELETED_INPUT)
                 .sendAndVerify(result -> this.testManager.postgresql()
                         .get(WorkspaceSiteMetaEntity.class)
-                        .hasSize(0));
+                        .singleElement()
+                        .andExpected(entity -> Objects.equals(entity.getSiteId(), expectedSiteId))
+                        .andExpected(entity -> Objects.equals(entity.getDeletedAt(), expectedDeletedAt))
+                        .andExpected(entity -> Objects.equals(entity.getUpdatedAt(), expectedDeletedAt))
+                        .assertEntity());
     }
 }

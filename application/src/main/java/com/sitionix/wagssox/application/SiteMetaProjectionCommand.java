@@ -1,8 +1,8 @@
 package com.sitionix.wagssox.application;
 
-import com.sitionix.wagssox.domain.WorkspaceSiteMeta;
+import com.sitionix.wagssox.domain.SiteMetaDelete;
 import com.sitionix.wagssox.domain.SiteMetaUpdate;
-import java.util.UUID;
+import com.sitionix.wagssox.domain.WorkspaceSiteMeta;
 
 public interface SiteMetaProjectionCommand {
 
@@ -10,5 +10,5 @@ public interface SiteMetaProjectionCommand {
 
     void applySiteUpdated(SiteMetaUpdate siteMetaUpdate);
 
-    void applySiteDeleted(UUID siteId);
+    void applySiteDeleted(SiteMetaDelete siteMetaDelete);
 }

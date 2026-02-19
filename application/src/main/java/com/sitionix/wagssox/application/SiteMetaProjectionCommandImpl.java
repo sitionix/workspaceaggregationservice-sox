@@ -1,10 +1,10 @@
 package com.sitionix.wagssox.application;
 
+import com.sitionix.wagssox.domain.SiteMetaDelete;
 import com.sitionix.wagssox.domain.SiteMetaUpdate;
 import com.sitionix.wagssox.domain.WorkspaceSiteMeta;
 import com.sitionix.wagssox.domain.repository.WorkspaceSiteMetaRepository;
 import java.util.Optional;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -29,8 +29,9 @@ public class SiteMetaProjectionCommandImpl implements SiteMetaProjectionCommand 
     }
 
     @Override
-    public void applySiteDeleted(final UUID siteId) {
-        this.workspaceSiteMetaRepository.deleteBySiteId(siteId);
+    public void applySiteDeleted(final SiteMetaDelete siteMetaDelete) {
+        this.workspaceSiteMetaRepository.findBySiteId(siteMetaDelete.siteId())
+                .ifPresent(existing -> this.workspaceSiteMetaRepository.save(this.deletedProjectionState(existing, siteMetaDelete)));
     }
 
     private WorkspaceSiteMeta mergedProjectionState(final WorkspaceSiteMeta existing, final SiteMetaUpdate siteMetaUpdate) {
@@ -42,7 +43,8 @@ public class SiteMetaProjectionCommandImpl implements SiteMetaProjectionCommand 
                 siteMetaUpdate.type(),
                 siteMetaUpdate.description(),
                 existing.createdAt(),
-                siteMetaUpdate.updatedAt()
+                siteMetaUpdate.updatedAt(),
+                existing.deletedAt()
         );
     }
 
@@ -55,7 +57,22 @@ public class SiteMetaProjectionCommandImpl implements SiteMetaProjectionCommand 
                 siteMetaUpdate.type(),
                 siteMetaUpdate.description(),
                 siteMetaUpdate.updatedAt(),
-                siteMetaUpdate.updatedAt()
+                siteMetaUpdate.updatedAt(),
+                null
+        );
+    }
+
+    private WorkspaceSiteMeta deletedProjectionState(final WorkspaceSiteMeta existing, final SiteMetaDelete siteMetaDelete) {
+        return new WorkspaceSiteMeta(
+                existing.siteId(),
+                siteMetaDelete.userId() == null ? existing.userId() : siteMetaDelete.userId(),
+                existing.name(),
+                existing.status(),
+                existing.type(),
+                existing.description(),
+                existing.createdAt(),
+                siteMetaDelete.deletedAt(),
+                siteMetaDelete.deletedAt()
         );
     }
 }

@@ -11,6 +11,7 @@ public record WorkspaceSiteMeta(
         WorkspaceSiteMetaType type,
         String description,
         Instant createdAt,
-        Instant updatedAt
+        Instant updatedAt,
+        Instant deletedAt
 ) {
 }

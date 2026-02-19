@@ -1,5 +1,6 @@
 package com.sitionix.wagssox.application;
 
+import com.sitionix.wagssox.domain.SiteMetaDelete;
 import com.sitionix.wagssox.domain.SiteMetaUpdate;
 import com.sitionix.wagssox.domain.WorkspaceSiteMeta;
 import com.sitionix.wagssox.domain.WorkspaceSiteMetaStatus;
@@ -48,7 +49,8 @@ class SiteMetaProjectionCommandImplTest {
                 WorkspaceSiteMetaType.PORTFOLIO,
                 "Description",
                 Instant.parse("2026-02-18T08:00:00Z"),
-                Instant.parse("2026-02-18T10:00:00Z")
+                Instant.parse("2026-02-18T10:00:00Z"),
+                null
         );
 
         //when
@@ -80,7 +82,8 @@ class SiteMetaProjectionCommandImplTest {
                 WorkspaceSiteMetaType.BLOG,
                 "From update",
                 updatedAt,
-                updatedAt
+                updatedAt,
+                null
         );
         when(this.workspaceSiteMetaRepository.findBySiteId(siteId)).thenReturn(Optional.empty());
 
@@ -104,7 +107,8 @@ class SiteMetaProjectionCommandImplTest {
                 WorkspaceSiteMetaType.PORTFOLIO,
                 "Old description",
                 Instant.parse("2026-02-18T08:00:00Z"),
-                Instant.parse("2026-02-18T09:00:00Z")
+                Instant.parse("2026-02-18T09:00:00Z"),
+                null
         );
         final SiteMetaUpdate siteMetaUpdate = this.getSiteMetaUpdate(
                 siteId,
@@ -123,7 +127,8 @@ class SiteMetaProjectionCommandImplTest {
                 WorkspaceSiteMetaType.BUSINESS,
                 "New description",
                 Instant.parse("2026-02-18T08:00:00Z"),
-                Instant.parse("2026-02-18T11:00:00Z")
+                Instant.parse("2026-02-18T11:00:00Z"),
+                null
         );
         when(this.workspaceSiteMetaRepository.findBySiteId(siteId)).thenReturn(Optional.of(existing));
 
@@ -147,7 +152,8 @@ class SiteMetaProjectionCommandImplTest {
                 WorkspaceSiteMetaType.PORTFOLIO,
                 "Description",
                 Instant.parse("2026-02-18T08:00:00Z"),
-                Instant.parse("2026-02-18T09:30:00Z")
+                Instant.parse("2026-02-18T09:30:00Z"),
+                null
         );
         final SiteMetaUpdate siteMetaUpdate = this.getSiteMetaUpdate(
                 siteId,
@@ -166,7 +172,8 @@ class SiteMetaProjectionCommandImplTest {
                 WorkspaceSiteMetaType.STORE,
                 "Should Not Apply",
                 Instant.parse("2026-02-18T08:00:00Z"),
-                Instant.parse("2026-02-18T12:30:00Z")
+                Instant.parse("2026-02-18T12:30:00Z"),
+                null
         );
         when(this.workspaceSiteMetaRepository.findBySiteId(siteId)).thenReturn(Optional.of(existing));
 
@@ -179,15 +186,55 @@ class SiteMetaProjectionCommandImplTest {
     }
 
     @Test
-    void givenSiteId_whenApplySiteDeleted_thenDeleteProjection() {
+    void givenSiteMeta_whenApplySiteDeleted_thenSaveSoftDeletedProjection() {
         //given
         final UUID siteId = UUID.fromString("3600b638-ed8c-47e5-845e-228f7f08a856");
+        final Instant deletedAt = Instant.parse("2026-02-18T13:00:00Z");
+        final WorkspaceSiteMeta existing = this.getWorkspaceSiteMeta(
+                siteId,
+                42L,
+                "Delete Candidate",
+                WorkspaceSiteMetaStatus.PUBLISHED,
+                WorkspaceSiteMetaType.BUSINESS,
+                "Description",
+                Instant.parse("2026-02-18T08:00:00Z"),
+                Instant.parse("2026-02-18T12:30:00Z"),
+                null
+        );
+        final SiteMetaDelete siteMetaDelete = new SiteMetaDelete(siteId, 42L, deletedAt);
+        final WorkspaceSiteMeta expected = this.getWorkspaceSiteMeta(
+                siteId,
+                42L,
+                "Delete Candidate",
+                WorkspaceSiteMetaStatus.PUBLISHED,
+                WorkspaceSiteMetaType.BUSINESS,
+                "Description",
+                Instant.parse("2026-02-18T08:00:00Z"),
+                deletedAt,
+                deletedAt
+        );
+        when(this.workspaceSiteMetaRepository.findBySiteId(siteId)).thenReturn(Optional.of(existing));
 
         //when
-        this.siteMetaProjectionCommand.applySiteDeleted(siteId);
+        this.siteMetaProjectionCommand.applySiteDeleted(siteMetaDelete);
 
         //then
-        verify(this.workspaceSiteMetaRepository).deleteBySiteId(siteId);
+        verify(this.workspaceSiteMetaRepository).findBySiteId(siteId);
+        verify(this.workspaceSiteMetaRepository).save(expected);
+    }
+
+    @Test
+    void givenMissingSiteMeta_whenApplySiteDeleted_thenSkipProjectionSave() {
+        //given
+        final UUID siteId = UUID.fromString("4a872ba3-f125-48f2-ae15-6799a173d2e2");
+        final SiteMetaDelete siteMetaDelete = new SiteMetaDelete(siteId, 42L, Instant.parse("2026-02-18T13:00:00Z"));
+        when(this.workspaceSiteMetaRepository.findBySiteId(siteId)).thenReturn(Optional.empty());
+
+        //when
+        this.siteMetaProjectionCommand.applySiteDeleted(siteMetaDelete);
+
+        //then
+        verify(this.workspaceSiteMetaRepository).findBySiteId(siteId);
     }
 
     private WorkspaceSiteMeta getWorkspaceSiteMeta(
@@ -198,7 +245,8 @@ class SiteMetaProjectionCommandImplTest {
             final WorkspaceSiteMetaType type,
             final String description,
             final Instant createdAt,
-            final Instant updatedAt
+            final Instant updatedAt,
+            final Instant deletedAt
     ) {
         return new WorkspaceSiteMeta(
                 siteId,
@@ -208,7 +256,8 @@ class SiteMetaProjectionCommandImplTest {
                 type,
                 description,
                 createdAt,
-                updatedAt
+                updatedAt,
+                deletedAt
         );
     }
 
