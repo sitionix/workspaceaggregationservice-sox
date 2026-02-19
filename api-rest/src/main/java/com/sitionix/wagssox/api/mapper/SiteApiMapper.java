@@ -1,39 +1,52 @@
 package com.sitionix.wagssox.api.mapper;
 
-import com.sitionix.wagssox.api.dto.WorkspaceSiteCardResponseDTO;
-import com.sitionix.wagssox.api.dto.WorkspaceSitesResponseDTO;
-import com.sitionix.wagssox.domain.WorkspaceSiteMeta;
+import com.app_afesox.wagssox.api_first.dto.WorkspaceSiteCardDTO;
+import com.app_afesox.wagssox.api_first.dto.WorkspaceSitesPageDTO;
+import com.sitionix.wagssox.domain.WorkspaceSiteMetaStatus;
+import com.sitionix.wagssox.domain.WorkspaceSiteMetaType;
 import com.sitionix.wagssox.domain.WorkspaceSitesPage;
-import java.util.List;
-import org.springframework.stereotype.Component;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.Objects;
+import org.mapstruct.InjectionStrategy;
+import org.mapstruct.Mapper;
+import org.openapitools.jackson.nullable.JsonNullable;
 
-@Component
-public class SiteApiMapper {
+@Mapper(componentModel = "spring", injectionStrategy = InjectionStrategy.CONSTRUCTOR)
+public interface SiteApiMapper {
 
-    public WorkspaceSitesResponseDTO asWorkspaceSitesResponseDTO(final WorkspaceSitesPage src) {
-        return WorkspaceSitesResponseDTO.builder()
-                .items(this.asWorkspaceSiteCardResponseDTOs(src.getItems()))
-                .page(src.getPage())
-                .size(src.getSize())
-                .hasNext(src.getHasNext())
-                .build();
+    WorkspaceSitesPageDTO asWorkspaceSitesPageDTO(WorkspaceSitesPage src);
+
+    default WorkspaceSitesPageDTO.SizeEnum asSizeEnum(final Integer src) {
+        if (Objects.isNull(src)) {
+            return null;
+        }
+        return WorkspaceSitesPageDTO.SizeEnum.fromValue(src);
     }
 
-    private List<WorkspaceSiteCardResponseDTO> asWorkspaceSiteCardResponseDTOs(final List<WorkspaceSiteMeta> src) {
-        return src.stream()
-                .map(this::asWorkspaceSiteCardResponseDTO)
-                .toList();
+    default WorkspaceSiteCardDTO.StatusEnum asStatusEnum(final WorkspaceSiteMetaStatus src) {
+        if (Objects.isNull(src)) {
+            return null;
+        }
+        return WorkspaceSiteCardDTO.StatusEnum.fromValue(src.name());
     }
 
-    private WorkspaceSiteCardResponseDTO asWorkspaceSiteCardResponseDTO(final WorkspaceSiteMeta src) {
-        return WorkspaceSiteCardResponseDTO.builder()
-                .siteId(src.getSiteId())
-                .name(src.getName())
-                .status(src.getStatus())
-                .type(src.getType())
-                .description(src.getDescription())
-                .createdAt(src.getCreatedAt())
-                .updatedAt(src.getUpdatedAt())
-                .build();
+    default JsonNullable<WorkspaceSiteCardDTO.TypeEnum> asType(final WorkspaceSiteMetaType src) {
+        if (Objects.isNull(src)) {
+            return JsonNullable.of(null);
+        }
+        return JsonNullable.of(WorkspaceSiteCardDTO.TypeEnum.fromValue(src.name()));
+    }
+
+    default JsonNullable<String> asDescription(final String src) {
+        return JsonNullable.of(src);
+    }
+
+    default OffsetDateTime asOffsetDateTime(final Instant src) {
+        if (Objects.isNull(src)) {
+            return null;
+        }
+        return src.atOffset(ZoneOffset.UTC);
     }
 }

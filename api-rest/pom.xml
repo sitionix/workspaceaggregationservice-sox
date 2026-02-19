@@ -11,11 +11,20 @@
 
     <artifactId>api-rest</artifactId>
 
+    <properties>
+        <wagssox.api.version>0.0.1</wagssox.api.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>domain</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.afesox</groupId>
+            <artifactId>app-afesox-wagssox-api-first-sitionix-81-unstable</artifactId>
+            <version>${wagssox.api.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -51,6 +60,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.openapitools</groupId>
+            <artifactId>jackson-databind-nullable</artifactId>
+            <version>0.2.6</version>
         </dependency>
     </dependencies>
 

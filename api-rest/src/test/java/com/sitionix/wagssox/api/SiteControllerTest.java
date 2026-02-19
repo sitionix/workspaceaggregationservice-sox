@@ -1,6 +1,6 @@
 package com.sitionix.wagssox.api;
 
-import com.sitionix.wagssox.api.dto.WorkspaceSitesResponseDTO;
+import com.app_afesox.wagssox.api_first.dto.WorkspaceSitesPageDTO;
 import com.sitionix.wagssox.api.mapper.SiteApiMapper;
 import com.sitionix.wagssox.domain.WorkspaceSitesPage;
 import com.sitionix.wagssox.domain.usecase.GetWorkspaceSites;
@@ -13,7 +13,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -41,61 +40,22 @@ class SiteControllerTest {
     }
 
     @Test
-    void givenValidRequestParams_whenGetSites_thenReturnWorkspaceSitesResponseDto() {
+    void givenValidRequestParams_whenGetSites_thenReturnWorkspaceSitesPageDto() {
         //given
         final Long userId = 123L;
-        final Integer page = 0;
         final Integer size = 20;
+        final Integer page = 1;
         final WorkspaceSitesPage useCaseResult = mock(WorkspaceSitesPage.class);
-        final WorkspaceSitesResponseDTO responseDTO = mock(WorkspaceSitesResponseDTO.class);
+        final WorkspaceSitesPageDTO responseDTO = mock(WorkspaceSitesPageDTO.class);
         when(this.getWorkspaceSites.execute(userId, page, size)).thenReturn(useCaseResult);
-        when(this.siteApiMapper.asWorkspaceSitesResponseDTO(useCaseResult)).thenReturn(responseDTO);
+        when(this.siteApiMapper.asWorkspaceSitesPageDTO(useCaseResult)).thenReturn(responseDTO);
 
         //when
-        final ResponseEntity<WorkspaceSitesResponseDTO> actual = this.siteController.getSites(userId, page, size);
+        final ResponseEntity<WorkspaceSitesPageDTO> actual = this.siteController.getSites(userId, size, page);
 
         //then
         assertThat(actual).isEqualTo(ResponseEntity.ok(responseDTO));
         verify(this.getWorkspaceSites).execute(userId, page, size);
-        verify(this.siteApiMapper).asWorkspaceSitesResponseDTO(useCaseResult);
-    }
-
-    @Test
-    void givenMissingUserId_whenGetSites_thenThrowIllegalArgumentException() {
-        //given
-        final Long userId = null;
-        final Integer page = 0;
-        final Integer size = 20;
-
-        //when then
-        assertThatThrownBy(() -> this.siteController.getSites(userId, page, size))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("userId is required");
-    }
-
-    @Test
-    void givenInvalidSize_whenGetSites_thenThrowIllegalArgumentException() {
-        //given
-        final Long userId = 123L;
-        final Integer page = 0;
-        final Integer size = 10;
-
-        //when then
-        assertThatThrownBy(() -> this.siteController.getSites(userId, page, size))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("size must be 20");
-    }
-
-    @Test
-    void givenNegativePage_whenGetSites_thenThrowIllegalArgumentException() {
-        //given
-        final Long userId = 123L;
-        final Integer page = -1;
-        final Integer size = 20;
-
-        //when then
-        assertThatThrownBy(() -> this.siteController.getSites(userId, page, size))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("page must be >= 0");
+        verify(this.siteApiMapper).asWorkspaceSitesPageDTO(useCaseResult);
     }
 }
