@@ -28,7 +28,7 @@ public interface WorkspaceSiteMetaRepository {
     Optional<WorkspaceSiteMeta> findBySiteId(UUID siteId);
 
     /**
-     * Loads active (non-archived and non-soft-deleted) site metadata for a user in descending update order.
+     * Loads non-archived site metadata for a user in descending update order.
      *
      * @param userId user identifier.
      * @param pageable page request with paging and sorting.

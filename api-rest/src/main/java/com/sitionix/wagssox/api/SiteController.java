@@ -21,8 +21,8 @@ public class SiteController implements SiteApi {
 
     @Override
     public ResponseEntity<WorkspaceSitesPageDTO> getSites(
-            final Integer size,
-            final Integer page
+            final Integer page,
+            final Integer size
     ) {
         final Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "updatedAt"));
         final WorkspaceSitesPage response = this.getWorkspaceSites.execute(pageable);

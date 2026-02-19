@@ -15,7 +15,6 @@ public interface WorkspaceSiteMetaJpaRepository extends JpaRepository<WorkspaceS
             FROM WorkspaceSiteMetaEntity siteMeta
             WHERE siteMeta.userId = :userId
               AND siteMeta.status.id <> :excludedStatusId
-              AND siteMeta.deletedAt IS NULL
             """)
     Page<WorkspaceSiteMetaEntity> findActiveByUserId(
             @Param("userId") Long userId,

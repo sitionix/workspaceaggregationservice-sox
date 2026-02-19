@@ -28,12 +28,12 @@ class RestExceptionHandlerTest {
     @Test
     void givenIllegalArgumentException_whenHandleIllegalArgumentException_thenReturnBadRequestErrorDto() {
         //given
-        final IllegalArgumentException exception = new IllegalArgumentException("size must be 20");
+        final IllegalArgumentException exception = new IllegalArgumentException("size must be greater than 0");
         final ResponseEntity<ErrorDTO> expected = ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ErrorDTO.builder()
                         .code(400)
                         .title("Bad Request")
-                        .details("size must be 20")
+                        .details("size must be greater than 0")
                         .build());
 
         //when
@@ -66,15 +66,15 @@ class RestExceptionHandlerTest {
     void givenSizeValidationFailure_whenHandleHandlerMethodValidationException_thenReturnBadRequestErrorDto() throws Exception {
         //given
         final HandlerMethodValidationException exception = this.getValidationException(
+                1,
                 0,
-                10,
-                "must be greater than or equal to 20"
+                "must be greater than or equal to 1"
         );
         final ResponseEntity<ErrorDTO> expected = ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ErrorDTO.builder()
                         .code(400)
                         .title("Bad Request")
-                        .details("must be greater than or equal to 20")
+                        .details("must be greater than or equal to 1")
                         .build());
 
         //when
@@ -89,7 +89,7 @@ class RestExceptionHandlerTest {
     void givenPageValidationFailure_whenHandleHandlerMethodValidationException_thenReturnBadRequestErrorDto() throws Exception {
         //given
         final HandlerMethodValidationException exception = this.getValidationException(
-                1,
+                0,
                 -1,
                 "must be greater than or equal to 0"
         );
@@ -129,7 +129,7 @@ class RestExceptionHandlerTest {
     }
 
     private static final class ValidationTarget {
-        void getSites(final Integer size, final Integer page) {
+        void getSites(final Integer page, final Integer size) {
         }
     }
 }

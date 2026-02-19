@@ -1,6 +1,15 @@
 {
   "items": [
     {
+      "siteId": "00000000-0000-0000-0000-000000000901",
+      "name": "Draft with deletedAt metadata",
+      "status": "DRAFT",
+      "type": "PORTFOLIO",
+      "description": "Description with deletedAt metadata",
+      "createdAt": "2026-01-01T00:00:00Z",
+      "updatedAt": "2026-01-01T00:15:01Z"
+    },
+    {
       "siteId": "00000000-0000-0000-0000-000000000003",
       "name": "Untitled site",
       "status": "PUBLISHED",

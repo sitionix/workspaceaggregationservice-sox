@@ -45,15 +45,15 @@ class SiteControllerTest {
     @Test
     void givenValidRequestParams_whenGetSites_thenReturnWorkspaceSitesPageDto() {
         //given
-        final Integer size = 20;
         final Integer page = 1;
+        final Integer size = 20;
         final WorkspaceSitesPage useCaseResult = mock(WorkspaceSitesPage.class);
         final WorkspaceSitesPageDTO responseDTO = mock(WorkspaceSitesPageDTO.class);
         when(this.getWorkspaceSites.execute(any(Pageable.class))).thenReturn(useCaseResult);
         when(this.siteApiMapper.asWorkspaceSitesPageDTO(useCaseResult)).thenReturn(responseDTO);
 
         //when
-        final ResponseEntity<WorkspaceSitesPageDTO> actual = this.siteController.getSites(size, page);
+        final ResponseEntity<WorkspaceSitesPageDTO> actual = this.siteController.getSites(page, size);
 
         //then
         assertThat(actual).isEqualTo(ResponseEntity.ok(responseDTO));

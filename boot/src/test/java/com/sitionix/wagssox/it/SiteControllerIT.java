@@ -17,8 +17,8 @@ class SiteControllerIT {
     private TestManager testManager;
 
     @Test
-    @DisplayName("given active archived and deleted sites when get first page then return only active sorted by updatedAt desc")
-    void givenActiveArchivedAndDeletedSites_whenGetFirstPage_thenReturnOnlyActiveSortedByUpdatedAtDesc() {
+    @DisplayName("given active archived and metadata-deletedAt sites when get first page then return only non-archived sorted by updatedAt desc")
+    void givenActiveArchivedAndMetadataDeletedAtSites_whenGetFirstPage_thenReturnOnlyNonArchivedSortedByUpdatedAtDesc() {
         //given
         this.testManager.postgresql()
                 .create()
@@ -30,7 +30,7 @@ class SiteControllerIT {
                 .to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withJson("workspaceSiteMetaGetSitesDraft2.json"))
                 .to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withJson("workspaceSiteMetaGetSitesPublishedUntitled.json"))
                 .to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withJson("workspaceSiteMetaGetSitesArchived.json"))
-                .to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withJson("workspaceSiteMetaGetSitesDeleted.json"))
+                .to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withJson("workspaceSiteMetaGetSitesDeletedAtMetadata.json"))
                 .to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withJson("workspaceSiteMetaGetSitesOtherUser.json"))
                 .build();
 
@@ -89,7 +89,7 @@ class SiteControllerIT {
     }
 
     @Test
-    @DisplayName("given invalid size when get sites then return bad request with validation error")
+    @DisplayName("given zero size when get sites then return bad request with validation error")
     void givenInvalidSize_whenGetSites_thenReturnBadRequestWithValidationError() {
         //given
 
@@ -99,7 +99,7 @@ class SiteControllerIT {
                 .header("X-Forge-User-Sub", "123")
                 .withQueryParameters(QueryParams.create()
                         .add("page", 0)
-                        .add("size", 10))
+                        .add("size", 0))
                 .expectStatus(HttpStatus.BAD_REQUEST)
                 .andExpectPath(MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.BAD_REQUEST.value()))
                 .andExpectPath(MockMvcResultMatchers.jsonPath("$.title").value(HttpStatus.BAD_REQUEST.getReasonPhrase()))
@@ -108,8 +108,8 @@ class SiteControllerIT {
     }
 
     @Test
-    @DisplayName("given missing size when get sites then return bad request with validation error")
-    void givenMissingSize_whenGetSites_thenReturnBadRequestWithValidationError() {
+    @DisplayName("given missing size when get sites then use default size twenty")
+    void givenMissingSize_whenGetSites_thenUseDefaultSizeTwenty() {
         //given
 
         //when then
@@ -118,10 +118,7 @@ class SiteControllerIT {
                 .header("X-Forge-User-Sub", "123")
                 .withQueryParameters(QueryParams.create()
                         .add("page", 0))
-                .expectStatus(HttpStatus.BAD_REQUEST)
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.BAD_REQUEST.value()))
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.title").value(HttpStatus.BAD_REQUEST.getReasonPhrase()))
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.details").isNotEmpty())
+                .expectResponse("getSitesDefaultSizeResponse.json")
                 .assertDefault();
     }
 

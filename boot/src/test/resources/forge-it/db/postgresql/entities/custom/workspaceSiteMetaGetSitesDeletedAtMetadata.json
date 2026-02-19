@@ -1,7 +1,7 @@
 {
   "siteId": "00000000-0000-0000-0000-000000000901",
   "userId": 123,
-  "name": "Deleted site",
+  "name": "Draft with deletedAt metadata",
   "status": {
     "id": 1,
     "description": "DRAFT"
@@ -10,7 +10,7 @@
     "id": 1,
     "description": "PORTFOLIO"
   },
-  "description": "Deleted description",
+  "description": "Description with deletedAt metadata",
   "createdAt": "2026-01-01T00:00:00Z",
   "updatedAt": "2026-01-01T00:15:01Z",
   "deletedAt": "2026-01-01T00:15:05Z"
