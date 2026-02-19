@@ -2,10 +2,7 @@ package com.sitionix.wagssox.application;
 
 import com.sitionix.wagssox.domain.SiteMetaUpdate;
 import com.sitionix.wagssox.domain.WorkspaceSiteMeta;
-import com.sitionix.wagssox.domain.WorkspaceSiteMetaStatus;
-import com.sitionix.wagssox.domain.WorkspaceSiteMetaType;
 import com.sitionix.wagssox.domain.repository.WorkspaceSiteMetaRepository;
-import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,50 +22,49 @@ public class SiteMetaProjectionCommandImpl implements SiteMetaProjectionCommand 
 
     @Override
     public void applySiteUpdated(final SiteMetaUpdate siteMetaUpdate) {
-        final UUID siteId = siteMetaUpdate.siteId();
-        final Long ownerUserId = siteMetaUpdate.ownerUserId();
-        final String name = siteMetaUpdate.name();
-        final WorkspaceSiteMetaStatus status = siteMetaUpdate.status();
-        final WorkspaceSiteMetaType type = siteMetaUpdate.type();
-        final String description = siteMetaUpdate.description();
-        final Instant updatedAt = siteMetaUpdate.updatedAt();
-        final Optional<WorkspaceSiteMeta> maybeExisting = this.workspaceSiteMetaRepository.findBySiteId(siteId);
+        final Optional<WorkspaceSiteMeta> maybeExisting = this.workspaceSiteMetaRepository.findBySiteId(siteMetaUpdate.siteId());
 
         if (maybeExisting.isEmpty()) {
-            final WorkspaceSiteMeta createdFromUpdate = new WorkspaceSiteMeta(
-                    siteId,
-                    ownerUserId,
-                    name,
-                    status,
-                    type,
-                    description,
-                    updatedAt,
-                    updatedAt
-            );
-            this.workspaceSiteMetaRepository.save(createdFromUpdate);
+            this.workspaceSiteMetaRepository.save(this.asCreatedFromUpdate(siteMetaUpdate));
             return;
         }
 
         final WorkspaceSiteMeta existing = maybeExisting.get();
-        if (Objects.nonNull(ownerUserId) && !Objects.equals(existing.ownerUserId(), ownerUserId)) {
+        if (Objects.nonNull(siteMetaUpdate.ownerUserId()) && !Objects.equals(existing.ownerUserId(), siteMetaUpdate.ownerUserId())) {
             return;
         }
 
-        final WorkspaceSiteMeta updatedSiteMeta = new WorkspaceSiteMeta(
-                existing.siteId(),
-                existing.ownerUserId(),
-                Objects.nonNull(name) ? name : existing.name(),
-                Objects.nonNull(status) ? status : existing.status(),
-                Objects.nonNull(type) ? type : existing.type(),
-                Objects.nonNull(description) ? description : existing.description(),
-                existing.createdAt(),
-                updatedAt
-        );
-        this.workspaceSiteMetaRepository.save(updatedSiteMeta);
+        this.workspaceSiteMetaRepository.save(this.asUpdatedSiteMeta(existing, siteMetaUpdate));
     }
 
     @Override
     public void applySiteDeleted(final UUID siteId) {
         this.workspaceSiteMetaRepository.deleteBySiteId(siteId);
+    }
+
+    private WorkspaceSiteMeta asCreatedFromUpdate(final SiteMetaUpdate siteMetaUpdate) {
+        return new WorkspaceSiteMeta(
+                siteMetaUpdate.siteId(),
+                siteMetaUpdate.ownerUserId(),
+                siteMetaUpdate.name(),
+                siteMetaUpdate.status(),
+                siteMetaUpdate.type(),
+                siteMetaUpdate.description(),
+                siteMetaUpdate.updatedAt(),
+                siteMetaUpdate.updatedAt()
+        );
+    }
+
+    private WorkspaceSiteMeta asUpdatedSiteMeta(final WorkspaceSiteMeta existing, final SiteMetaUpdate siteMetaUpdate) {
+        return new WorkspaceSiteMeta(
+                existing.siteId(),
+                existing.ownerUserId(),
+                Objects.nonNull(siteMetaUpdate.name()) ? siteMetaUpdate.name() : existing.name(),
+                Objects.nonNull(siteMetaUpdate.status()) ? siteMetaUpdate.status() : existing.status(),
+                Objects.nonNull(siteMetaUpdate.type()) ? siteMetaUpdate.type() : existing.type(),
+                Objects.nonNull(siteMetaUpdate.description()) ? siteMetaUpdate.description() : existing.description(),
+                existing.createdAt(),
+                siteMetaUpdate.updatedAt()
+        );
     }
 }
