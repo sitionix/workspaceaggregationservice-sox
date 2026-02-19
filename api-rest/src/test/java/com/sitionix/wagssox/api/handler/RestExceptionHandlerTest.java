@@ -1,7 +1,6 @@
 package com.sitionix.wagssox.api.handler;
 
 import com.app_afesox.wagssox.api_first.dto.ErrorDTO;
-import com.sitionix.wagssox.domain.exception.AuthenticationRequiredException;
 import java.lang.reflect.Method;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,24 +23,6 @@ class RestExceptionHandlerTest {
     @BeforeEach
     void setUp() {
         this.restExceptionHandler = new RestExceptionHandler();
-    }
-
-    @Test
-    void givenAuthenticationRequiredException_whenHandleAuthenticationRequired_thenReturnUnauthorizedErrorDto() {
-        //given
-        final AuthenticationRequiredException exception = new AuthenticationRequiredException("Authentication required");
-        final ResponseEntity<ErrorDTO> expected = ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ErrorDTO.builder()
-                        .code(401)
-                        .title("Unauthorized")
-                        .details("Authentication required")
-                        .build());
-
-        //when
-        final ResponseEntity<ErrorDTO> actual = this.restExceptionHandler.handleAuthenticationRequired(exception);
-
-        //then
-        assertThat(actual).isEqualTo(expected);
     }
 
     @Test

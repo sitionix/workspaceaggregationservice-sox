@@ -3,10 +3,12 @@ package com.sitionix.wagssox.infrastructure.postgresql.mapper;
 import com.sitionix.wagssox.domain.WorkspaceSiteMeta;
 import com.sitionix.wagssox.domain.WorkspaceSiteMetaStatus;
 import com.sitionix.wagssox.domain.WorkspaceSiteMetaType;
+import com.sitionix.wagssox.domain.WorkspaceSitesPage;
 import com.sitionix.wagssox.infrastructure.postgresql.entity.WorkspaceSiteMetaEntity;
 import com.sitionix.wagssox.infrastructure.postgresql.entity.WorkspaceSiteMetaStatusEntity;
 import com.sitionix.wagssox.infrastructure.postgresql.entity.WorkspaceSiteMetaTypeEntity;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,6 +16,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -106,6 +111,40 @@ class WorkspaceSiteMetaInfraMapperTest {
 
         //then
         assertThat(actual).isNull();
+    }
+
+    @Test
+    void givenPageOfEntities_whenAsWorkspaceSitesPage_thenReturnMappedWorkspaceSitesPageWithFallbackName() {
+        //given
+        final WorkspaceSiteMetaStatusEntity statusEntity = this.getStatusEntity(2L, "PUBLISHED");
+        final WorkspaceSiteMetaTypeEntity typeEntity = this.getTypeEntity(2L, "BUSINESS");
+        final WorkspaceSiteMetaEntity siteMetaEntity = this.getWorkspaceSiteMetaEntity(statusEntity, typeEntity);
+        siteMetaEntity.setName(null);
+        final Page<WorkspaceSiteMetaEntity> entities = new PageImpl<>(
+                List.of(siteMetaEntity),
+                PageRequest.of(1, 20),
+                41
+        );
+        final WorkspaceSiteMeta expectedSite = this.getWorkspaceSiteMeta().toBuilder()
+                .name("Untitled site")
+                .build();
+        final WorkspaceSitesPage expected = WorkspaceSitesPage.builder()
+                .items(List.of(expectedSite))
+                .page(1)
+                .size(20)
+                .hasNext(true)
+                .build();
+
+        when(this.workspaceSiteMetaStatusInfraMapper.asStatus(statusEntity)).thenReturn(WorkspaceSiteMetaStatus.PUBLISHED);
+        when(this.workspaceSiteMetaTypeInfraMapper.asType(typeEntity)).thenReturn(WorkspaceSiteMetaType.BUSINESS);
+
+        //when
+        final WorkspaceSitesPage actual = this.workspaceSiteMetaInfraMapper.asWorkspaceSitesPage(entities);
+
+        //then
+        assertThat(actual).isEqualTo(expected);
+        verify(this.workspaceSiteMetaStatusInfraMapper).asStatus(statusEntity);
+        verify(this.workspaceSiteMetaTypeInfraMapper).asType(typeEntity);
     }
 
     private WorkspaceSiteMeta getWorkspaceSiteMeta() {

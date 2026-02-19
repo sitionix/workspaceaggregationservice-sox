@@ -15,7 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
@@ -96,25 +96,14 @@ class WorkspaceSiteMetaRepositoryImplTest {
         final Long userId = 123L;
         final Integer page = 1;
         final Integer size = 20;
-        final WorkspaceSiteMetaEntity entity = mock(WorkspaceSiteMetaEntity.class);
-        final WorkspaceSiteMeta mapped = WorkspaceSiteMeta.builder().name(null).build();
-        final WorkspaceSiteMeta expectedSite = WorkspaceSiteMeta.builder().name("Untitled site").build();
-        final WorkspaceSitesPage expected = WorkspaceSitesPage.builder()
-                .items(List.of(expectedSite))
-                .page(page)
-                .size(size)
-                .hasNext(true)
-                .build();
-        when(this.workspaceSiteMetaJpaRepository.findByUserIdAndStatus_IdNotAndDeletedAtIsNull(
+        final Page<WorkspaceSiteMetaEntity> entityPage = mock(Page.class);
+        final WorkspaceSitesPage expected = mock(WorkspaceSitesPage.class);
+        when(this.workspaceSiteMetaJpaRepository.findActiveByUserId(
                 eq(userId),
                 eq(3L),
                 any(Pageable.class)
-        )).thenReturn(new PageImpl<>(
-                List.of(entity),
-                PageRequest.of(page, size),
-                41
-        ));
-        when(this.workspaceSiteMetaInfraMapper.asDomain(entity)).thenReturn(mapped);
+        )).thenReturn(entityPage);
+        when(this.workspaceSiteMetaInfraMapper.asWorkspaceSitesPage(entityPage)).thenReturn(expected);
 
         //when
         final WorkspaceSitesPage actual = this.workspaceSiteMetaRepository.findActiveByUserId(userId, page, size);
@@ -123,7 +112,7 @@ class WorkspaceSiteMetaRepositoryImplTest {
         assertThat(actual).isEqualTo(expected);
 
         final ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
-        verify(this.workspaceSiteMetaJpaRepository).findByUserIdAndStatus_IdNotAndDeletedAtIsNull(
+        verify(this.workspaceSiteMetaJpaRepository).findActiveByUserId(
                 eq(userId),
                 eq(3L),
                 pageableCaptor.capture()
@@ -131,7 +120,7 @@ class WorkspaceSiteMetaRepositoryImplTest {
         final Pageable actualPageable = pageableCaptor.getValue();
         assertThat(actualPageable.getPageNumber()).isEqualTo(page);
         assertThat(actualPageable.getPageSize()).isEqualTo(size);
-        assertThat(actualPageable.getSort().getOrderFor("updatedAt").isDescending()).isTrue();
-        verify(this.workspaceSiteMetaInfraMapper).asDomain(entity);
+        assertThat(actualPageable.getSort().isUnsorted()).isTrue();
+        verify(this.workspaceSiteMetaInfraMapper).asWorkspaceSitesPage(entityPage);
     }
 }

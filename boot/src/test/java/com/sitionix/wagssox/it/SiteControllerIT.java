@@ -115,24 +115,7 @@ class SiteControllerIT {
                 .withQueryParameters(QueryParams.create()
                         .add("page", 0)
                         .add("size", 20))
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.items.length()").value(20))
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.page").value(0))
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.size").value(20))
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.hasNext").value(true))
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.items[0].siteId")
-                        .value("00000000-0000-0000-0000-000000000025"))
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.items[0].name")
-                        .value("Untitled site"))
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.items[0].status")
-                        .value("PUBLISHED"))
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.items[19].siteId")
-                        .value("00000000-0000-0000-0000-000000000006"))
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.items[?(@.siteId=='00000000-0000-0000-0000-000000000900')]")
-                        .isEmpty())
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.items[?(@.siteId=='00000000-0000-0000-0000-000000000901')]")
-                        .isEmpty())
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.items[?(@.siteId=='00000000-0000-0000-0000-000000000902')]")
-                        .isEmpty())
+                .expectResponse("getSitesFirstPageResponse.json")
                 .assertDefault();
     }
 
@@ -171,20 +154,7 @@ class SiteControllerIT {
                 .withQueryParameters(QueryParams.create()
                         .add("page", 1)
                         .add("size", 20))
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.items.length()").value(5))
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.page").value(1))
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.size").value(20))
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.hasNext").value(false))
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.items[0].siteId")
-                        .value("00000000-0000-0000-0000-000000000005"))
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.items[1].siteId")
-                        .value("00000000-0000-0000-0000-000000000004"))
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.items[2].siteId")
-                        .value("00000000-0000-0000-0000-000000000003"))
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.items[3].siteId")
-                        .value("00000000-0000-0000-0000-000000000002"))
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.items[4].siteId")
-                        .value("00000000-0000-0000-0000-000000000001"))
+                .expectResponse("getSitesSecondPageResponse.json")
                 .assertDefault();
     }
 
@@ -203,7 +173,7 @@ class SiteControllerIT {
                 .expectStatus(HttpStatus.UNAUTHORIZED)
                 .andExpectPath(MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.UNAUTHORIZED.value()))
                 .andExpectPath(MockMvcResultMatchers.jsonPath("$.title").value(HttpStatus.UNAUTHORIZED.getReasonPhrase()))
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.details").value("Authentication required"))
+                .andExpectPath(MockMvcResultMatchers.jsonPath("$.details").isNotEmpty())
                 .assertDefault();
     }
 

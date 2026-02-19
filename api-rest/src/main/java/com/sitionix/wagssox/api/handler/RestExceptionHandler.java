@@ -1,7 +1,6 @@
 package com.sitionix.wagssox.api.handler;
 
 import com.app_afesox.wagssox.api_first.dto.ErrorDTO;
-import com.sitionix.wagssox.domain.exception.AuthenticationRequiredException;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,11 +11,6 @@ import org.springframework.web.method.annotation.HandlerMethodValidationExceptio
 
 @RestControllerAdvice
 public class RestExceptionHandler {
-
-    @ExceptionHandler(AuthenticationRequiredException.class)
-    public ResponseEntity<ErrorDTO> handleAuthenticationRequired(final AuthenticationRequiredException exception) {
-        return this.buildError(HttpStatus.UNAUTHORIZED, exception.getMessage());
-    }
 
     @ExceptionHandler(HandlerMethodValidationException.class)
     public ResponseEntity<ErrorDTO> handleHandlerMethodValidationException(final HandlerMethodValidationException ex) {

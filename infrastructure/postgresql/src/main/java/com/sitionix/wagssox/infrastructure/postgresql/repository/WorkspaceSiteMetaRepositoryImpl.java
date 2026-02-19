@@ -12,14 +12,11 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
 public class WorkspaceSiteMetaRepositoryImpl implements WorkspaceSiteMetaRepository {
-
-    private static final String UNTITLED_SITE_NAME = "Untitled site";
 
     private final WorkspaceSiteMetaJpaRepository workspaceSiteMetaJpaRepository;
     private final WorkspaceSiteMetaInfraMapper workspaceSiteMetaInfraMapper;
@@ -39,29 +36,11 @@ public class WorkspaceSiteMetaRepositoryImpl implements WorkspaceSiteMetaReposit
 
     @Override
     public WorkspaceSitesPage findActiveByUserId(final Long userId, final Integer page, final Integer size) {
-        final Page<WorkspaceSiteMetaEntity> entities = this.workspaceSiteMetaJpaRepository.findByUserIdAndStatus_IdNotAndDeletedAtIsNull(
+        final Page<WorkspaceSiteMetaEntity> entities = this.workspaceSiteMetaJpaRepository.findActiveByUserId(
                 userId,
                 WorkspaceSiteMetaStatus.ARCHIVED.getId(),
-                PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "updatedAt"))
+                PageRequest.of(page, size)
         );
-
-        return WorkspaceSitesPage.builder()
-                .items(entities.getContent().stream()
-                        .map(this.workspaceSiteMetaInfraMapper::asDomain)
-                        .map(this::applyNameFallback)
-                        .toList())
-                .page(entities.getNumber())
-                .size(entities.getSize())
-                .hasNext(entities.hasNext())
-                .build();
-    }
-
-    private WorkspaceSiteMeta applyNameFallback(final WorkspaceSiteMeta siteMeta) {
-        if (siteMeta.getName() == null) {
-            return siteMeta.toBuilder()
-                    .name(UNTITLED_SITE_NAME)
-                    .build();
-        }
-        return siteMeta;
+        return this.workspaceSiteMetaInfraMapper.asWorkspaceSitesPage(entities);
     }
 }
