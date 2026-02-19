@@ -3,10 +3,12 @@
   "userId": 33,
   "name": "Delete Me",
   "status": {
-    "id": 1
+    "id": 1,
+    "description": "DRAFT"
   },
   "type": {
-    "id": 1
+    "id": 1,
+    "description": "PORTFOLIO"
   },
   "description": "Projection to delete",
   "createdAt": "2026-02-18T11:00:00Z",

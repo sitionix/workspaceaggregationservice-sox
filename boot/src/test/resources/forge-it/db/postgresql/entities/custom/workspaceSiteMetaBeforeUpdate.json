@@ -3,10 +3,12 @@
   "userId": 21,
   "name": "Initial Site Name",
   "status": {
-    "id": 1
+    "id": 1,
+    "description": "DRAFT"
   },
   "type": {
-    "id": 1
+    "id": 1,
+    "description": "PORTFOLIO"
   },
   "description": "Initial description",
   "createdAt": "2026-02-18T11:00:00Z",
