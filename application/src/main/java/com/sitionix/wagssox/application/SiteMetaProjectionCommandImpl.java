@@ -22,27 +22,17 @@ public class SiteMetaProjectionCommandImpl implements SiteMetaProjectionCommand 
 
     @Override
     public void applySiteUpdated(final SiteMetaUpdate siteMetaUpdate) {
-        final Optional<WorkspaceSiteMeta> existingSiteMeta = this.workspaceSiteMetaRepository.findBySiteId(siteMetaUpdate.getSiteId());
-        existingSiteMeta.ifPresentOrElse(
-                existing -> this.workspaceSiteMetaRepository.save(existing.toBuilder()
-                        .userId(siteMetaUpdate.getUserId())
-                        .name(siteMetaUpdate.getName())
-                        .status(siteMetaUpdate.getStatus())
-                        .type(siteMetaUpdate.getType())
-                        .description(siteMetaUpdate.getDescription())
-                        .updatedAt(siteMetaUpdate.getUpdatedAt())
-                        .build()),
-                () -> this.workspaceSiteMetaRepository.save(WorkspaceSiteMeta.builder()
-                        .siteId(siteMetaUpdate.getSiteId())
-                        .userId(siteMetaUpdate.getUserId())
-                        .name(siteMetaUpdate.getName())
-                        .status(siteMetaUpdate.getStatus())
-                        .type(siteMetaUpdate.getType())
-                        .description(siteMetaUpdate.getDescription())
-                        .createdAt(siteMetaUpdate.getUpdatedAt())
-                        .updatedAt(siteMetaUpdate.getUpdatedAt())
-                        .build())
-        );
+        final WorkspaceSiteMeta nextState = this.workspaceSiteMetaRepository.findBySiteId(siteMetaUpdate.getSiteId())
+                .map(existing -> this.withUpdate(existing.toBuilder(), siteMetaUpdate).build())
+                .orElseGet(() -> this.withUpdate(
+                                WorkspaceSiteMeta.builder()
+                                        .siteId(siteMetaUpdate.getSiteId())
+                                        .createdAt(siteMetaUpdate.getUpdatedAt()),
+                                siteMetaUpdate
+                        )
+                        .build());
+
+        this.workspaceSiteMetaRepository.save(nextState);
     }
 
     @Override
@@ -54,5 +44,16 @@ public class SiteMetaProjectionCommandImpl implements SiteMetaProjectionCommand 
                         .updatedAt(siteMetaDelete.getDeletedAt())
                         .deletedAt(siteMetaDelete.getDeletedAt())
                         .build()));
+    }
+
+    private WorkspaceSiteMeta.WorkspaceSiteMetaBuilder withUpdate(final WorkspaceSiteMeta.WorkspaceSiteMetaBuilder builder,
+                                                                  final SiteMetaUpdate siteMetaUpdate) {
+        return builder
+                .userId(siteMetaUpdate.getUserId())
+                .name(siteMetaUpdate.getName())
+                .status(siteMetaUpdate.getStatus())
+                .type(siteMetaUpdate.getType())
+                .description(siteMetaUpdate.getDescription())
+                .updatedAt(siteMetaUpdate.getUpdatedAt());
     }
 }
