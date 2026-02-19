@@ -23,6 +23,6 @@ public class WorkspaceSiteMetaStatusEntity {
     @Column(name = "id", nullable = false, updatable = false)
     private Long id;
 
-    @Column(name = "code", nullable = false, updatable = false, length = 32)
-    private String code;
+    @Column(name = "description", nullable = false, updatable = false, length = 64)
+    private String description;
 }

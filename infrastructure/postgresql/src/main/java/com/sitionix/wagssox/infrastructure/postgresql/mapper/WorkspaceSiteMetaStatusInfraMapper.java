@@ -22,7 +22,7 @@ public interface WorkspaceSiteMetaStatusInfraMapper {
         }
         return WorkspaceSiteMetaStatusEntity.builder()
                 .id(status.getId())
-                .code(status.name())
+                .description(status.name())
                 .build();
     }
 }

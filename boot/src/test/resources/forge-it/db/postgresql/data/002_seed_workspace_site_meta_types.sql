@@ -1,4 +1,4 @@
-INSERT INTO workspace_site_meta_types (id, code)
+INSERT INTO workspace_site_meta_types (id, description)
 VALUES (1, 'PORTFOLIO'),
        (2, 'BUSINESS'),
        (3, 'BLOG'),
