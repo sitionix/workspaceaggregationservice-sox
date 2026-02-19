@@ -8,11 +8,17 @@ import com.app_afesox.stsssox.events.sitemeta.SiteStatusDTO;
 import com.app_afesox.stsssox.events.sitemeta.SiteTypeDTO;
 import com.app_afesox.stsssox.events.sitemeta.SiteUpdatedEvent;
 import com.sitionix.wagssox.application.SiteMetaProjectionCommand;
+import com.sitionix.wagssox.domain.SiteMetaUpdate;
 import com.sitionix.wagssox.domain.WorkspaceSiteMeta;
 import com.sitionix.wagssox.domain.WorkspaceSiteMetaStatus;
 import com.sitionix.wagssox.domain.WorkspaceSiteMetaType;
+import com.sitionix.wagssox.pipe.sitemeta.mapper.EventMapper;
+import com.sitionix.wagssox.pipe.sitemeta.mapper.SiteCreatedEventMapperImpl;
+import com.sitionix.wagssox.pipe.sitemeta.mapper.SiteDeletedEventMapperImpl;
 import com.sitionix.wagssox.pipe.sitemeta.mapper.SiteMetaEventMapper;
+import com.sitionix.wagssox.pipe.sitemeta.mapper.SiteUpdatedEventMapperImpl;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,7 +33,13 @@ class SiteMetaConsumerTest {
     @BeforeEach
     void setUp() {
         this.capturingSiteMetaProjectionCommand = new CapturingSiteMetaProjectionCommand();
-        this.siteMetaConsumer = new SiteMetaConsumer(this.capturingSiteMetaProjectionCommand, new SiteMetaEventMapper());
+        final EventMapper<?, ?> siteCreatedEventMapper = new SiteCreatedEventMapperImpl();
+        final EventMapper<?, ?> siteUpdatedEventMapper = new SiteUpdatedEventMapperImpl();
+        final EventMapper<?, ?> siteDeletedEventMapper = new SiteDeletedEventMapperImpl();
+        final SiteMetaEventMapper siteMetaEventMapper = new SiteMetaEventMapper(
+                List.of(siteCreatedEventMapper, siteUpdatedEventMapper, siteDeletedEventMapper)
+        );
+        this.siteMetaConsumer = new SiteMetaConsumer(this.capturingSiteMetaProjectionCommand, siteMetaEventMapper);
     }
 
     @Test
@@ -132,20 +144,14 @@ class SiteMetaConsumerTest {
         }
 
         @Override
-        public void applySiteUpdated(final UUID siteId,
-                                     final Long ownerUserId,
-                                     final String name,
-                                     final WorkspaceSiteMetaStatus status,
-                                     final WorkspaceSiteMetaType type,
-                                     final String description,
-                                     final Instant updatedAt) {
-            this.updatedSiteId = siteId;
-            this.updatedOwnerUserId = ownerUserId;
-            this.updatedName = name;
-            this.updatedStatus = status;
-            this.updatedType = type;
-            this.updatedDescription = description;
-            this.updatedAt = updatedAt;
+        public void applySiteUpdated(final SiteMetaUpdate siteMetaUpdate) {
+            this.updatedSiteId = siteMetaUpdate.siteId();
+            this.updatedOwnerUserId = siteMetaUpdate.ownerUserId();
+            this.updatedName = siteMetaUpdate.name();
+            this.updatedStatus = siteMetaUpdate.status();
+            this.updatedType = siteMetaUpdate.type();
+            this.updatedDescription = siteMetaUpdate.description();
+            this.updatedAt = siteMetaUpdate.updatedAt();
         }
 
         @Override

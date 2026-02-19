@@ -1,5 +1,6 @@
 package com.sitionix.wagssox.application;
 
+import com.sitionix.wagssox.domain.SiteMetaUpdate;
 import com.sitionix.wagssox.domain.WorkspaceSiteMeta;
 import com.sitionix.wagssox.domain.WorkspaceSiteMetaStatus;
 import com.sitionix.wagssox.domain.WorkspaceSiteMetaType;
@@ -49,15 +50,14 @@ class SiteMetaProjectionCommandImplTest {
         this.inMemoryWorkspaceSiteMetaRepository.save(existing);
 
         //when
-        this.siteMetaProjectionCommand.applySiteUpdated(
+        this.siteMetaProjectionCommand.applySiteUpdated(new SiteMetaUpdate(
                 siteId,
                 existing.ownerUserId(),
                 "New Name",
                 WorkspaceSiteMetaStatus.PUBLISHED,
                 null,
                 null,
-                updatedAt
-        );
+                updatedAt));
 
         //then
         final WorkspaceSiteMeta actual = this.inMemoryWorkspaceSiteMetaRepository.findBySiteId(siteId).orElseThrow();
@@ -79,15 +79,14 @@ class SiteMetaProjectionCommandImplTest {
         final Instant updatedAt = Instant.parse("2026-02-18T11:30:00Z");
 
         //when
-        this.siteMetaProjectionCommand.applySiteUpdated(
+        this.siteMetaProjectionCommand.applySiteUpdated(new SiteMetaUpdate(
                 siteId,
                 ownerUserId,
                 "Projected Site",
                 WorkspaceSiteMetaStatus.DRAFT,
                 WorkspaceSiteMetaType.BLOG,
                 "From update",
-                updatedAt
-        );
+                updatedAt));
 
         //then
         final WorkspaceSiteMeta actual = this.inMemoryWorkspaceSiteMetaRepository.findBySiteId(siteId).orElseThrow();

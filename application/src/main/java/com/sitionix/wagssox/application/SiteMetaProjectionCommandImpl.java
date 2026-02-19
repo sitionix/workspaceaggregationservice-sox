@@ -1,5 +1,6 @@
 package com.sitionix.wagssox.application;
 
+import com.sitionix.wagssox.domain.SiteMetaUpdate;
 import com.sitionix.wagssox.domain.WorkspaceSiteMeta;
 import com.sitionix.wagssox.domain.WorkspaceSiteMetaStatus;
 import com.sitionix.wagssox.domain.WorkspaceSiteMetaType;
@@ -23,13 +24,14 @@ public class SiteMetaProjectionCommandImpl implements SiteMetaProjectionCommand 
     }
 
     @Override
-    public void applySiteUpdated(final UUID siteId,
-                                 final Long ownerUserId,
-                                 final String name,
-                                 final WorkspaceSiteMetaStatus status,
-                                 final WorkspaceSiteMetaType type,
-                                 final String description,
-                                 final Instant updatedAt) {
+    public void applySiteUpdated(final SiteMetaUpdate siteMetaUpdate) {
+        final UUID siteId = siteMetaUpdate.siteId();
+        final Long ownerUserId = siteMetaUpdate.ownerUserId();
+        final String name = siteMetaUpdate.name();
+        final WorkspaceSiteMetaStatus status = siteMetaUpdate.status();
+        final WorkspaceSiteMetaType type = siteMetaUpdate.type();
+        final String description = siteMetaUpdate.description();
+        final Instant updatedAt = siteMetaUpdate.updatedAt();
         final Optional<WorkspaceSiteMeta> maybeExisting = this.workspaceSiteMetaRepository.findBySiteId(siteId);
 
         if (maybeExisting.isEmpty()) {

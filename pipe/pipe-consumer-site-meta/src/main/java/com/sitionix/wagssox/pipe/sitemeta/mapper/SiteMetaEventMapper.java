@@ -1,83 +1,29 @@
 package com.sitionix.wagssox.pipe.sitemeta.mapper;
 
-import com.app_afesox.stsssox.events.sitemeta.SiteCreatedEvent;
-import com.app_afesox.stsssox.events.sitemeta.SiteDeletedEvent;
-import com.app_afesox.stsssox.events.sitemeta.SiteStatusDTO;
-import com.app_afesox.stsssox.events.sitemeta.SiteTypeDTO;
-import com.app_afesox.stsssox.events.sitemeta.SiteUpdatedEvent;
-import com.sitionix.wagssox.domain.WorkspaceSiteMeta;
-import com.sitionix.wagssox.domain.WorkspaceSiteMetaStatus;
-import com.sitionix.wagssox.domain.WorkspaceSiteMetaType;
-import java.time.Instant;
-import java.util.UUID;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class SiteMetaEventMapper {
 
-    public WorkspaceSiteMeta asSiteMeta(final SiteCreatedEvent event) {
-        return new WorkspaceSiteMeta(
-                UUID.fromString(event.getSiteId().toString()),
-                event.getOwnerUserId(),
-                event.getName().toString(),
-                this.asStatus(event.getStatus()),
-                this.asType(event.getType()),
-                this.asNullableString(event.getDescription()),
-                Instant.parse(event.getCreatedAt().toString()),
-                Instant.parse(event.getUpdatedAt().toString())
+    private final List<EventMapper<?, ?>> eventMappers;
+
+    public <R> R asProjection(final Object payload, final Class<R> resultType) {
+        final EventMapper<Object, R> mapper = this.resolve(payload.getClass(), resultType);
+        return mapper.asProjection(payload);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <R> EventMapper<Object, R> resolve(final Class<?> payloadType, final Class<R> resultType) {
+        for (final EventMapper<?, ?> eventMapper : this.eventMappers) {
+            if (eventMapper.supports(payloadType, resultType)) {
+                return (EventMapper<Object, R>) eventMapper;
+            }
+        }
+        throw new IllegalArgumentException(
+                "No mapper found for payload type " + payloadType.getName() + " and result type " + resultType.getName()
         );
-    }
-
-    public UUID asSiteId(final SiteUpdatedEvent event) {
-        return UUID.fromString(event.getSiteId().toString());
-    }
-
-    public Long asOwnerUserId(final SiteUpdatedEvent event) {
-        return event.getOwnerUserId();
-    }
-
-    public String asName(final SiteUpdatedEvent event) {
-        return this.asNullableString(event.getName());
-    }
-
-    public WorkspaceSiteMetaStatus asStatus(final SiteUpdatedEvent event) {
-        return this.asStatus(event.getStatus());
-    }
-
-    public WorkspaceSiteMetaType asType(final SiteUpdatedEvent event) {
-        return this.asType(event.getType());
-    }
-
-    public String asDescription(final SiteUpdatedEvent event) {
-        return this.asNullableString(event.getDescription());
-    }
-
-    public Instant asUpdatedAt(final SiteUpdatedEvent event) {
-        return Instant.parse(event.getUpdatedAt().toString());
-    }
-
-    public UUID asSiteId(final SiteDeletedEvent event) {
-        return UUID.fromString(event.getSiteId().toString());
-    }
-
-    private WorkspaceSiteMetaStatus asStatus(final SiteStatusDTO status) {
-        if (status == null) {
-            return null;
-        }
-        return WorkspaceSiteMetaStatus.valueOf(status.name());
-    }
-
-    private WorkspaceSiteMetaType asType(final SiteTypeDTO type) {
-        if (type == null) {
-            return null;
-        }
-        return WorkspaceSiteMetaType.valueOf(type.name());
-    }
-
-    private String asNullableString(final CharSequence value) {
-        if (value == null) {
-            return null;
-        }
-        return value.toString();
     }
 }
