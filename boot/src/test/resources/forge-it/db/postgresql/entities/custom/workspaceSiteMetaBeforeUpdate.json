@@ -1,0 +1,17 @@
+{
+  "siteId": "a4daef31-b03a-4e90-9fe9-297c74eaf628",
+  "userId": 21,
+  "name": "Initial Site Name",
+  "status": {
+    "id": 1,
+    "description": "DRAFT"
+  },
+  "type": {
+    "id": 1,
+    "description": "PORTFOLIO"
+  },
+  "description": "Initial description",
+  "createdAt": "2026-02-18T11:00:00Z",
+  "updatedAt": "2026-02-18T11:00:00Z",
+  "deletedAt": null
+}
