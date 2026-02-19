@@ -97,6 +97,7 @@ class SiteMetaConsumerIT {
                         .get(WorkspaceSiteMetaEntity.class)
                         .singleElement()
                         .andExpected(entity -> Objects.equals(entity.getSiteId(), expectedSiteId))
+                        .andExpected(entity -> Objects.equals(entity.getStatus().getId(), 3L))
                         .andExpected(entity -> Objects.equals(entity.getDeletedAt(), expectedDeletedAt))
                         .andExpected(entity -> Objects.equals(entity.getUpdatedAt(), expectedDeletedAt))
                         .assertEntity());

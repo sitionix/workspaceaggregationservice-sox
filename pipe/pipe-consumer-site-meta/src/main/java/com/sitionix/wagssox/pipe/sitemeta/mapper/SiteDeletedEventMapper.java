@@ -22,10 +22,10 @@ public interface SiteDeletedEventMapper extends EventMapper<SiteDeletedEvent, Si
 
     @Override
     default SiteMetaDelete asProjection(final SiteDeletedEvent payload) {
-        return new SiteMetaDelete(
-                payload.getSiteId() == null ? null : UUID.fromString(payload.getSiteId().toString()),
-                payload.getUserId(),
-                payload.getDeletedAt() == null ? null : Instant.parse(payload.getDeletedAt().toString())
-        );
+        return SiteMetaDelete.builder()
+                .siteId(payload.getSiteId() == null ? null : UUID.fromString(payload.getSiteId().toString()))
+                .userId(payload.getUserId())
+                .deletedAt(payload.getDeletedAt() == null ? null : Instant.parse(payload.getDeletedAt().toString()))
+                .build();
     }
 }

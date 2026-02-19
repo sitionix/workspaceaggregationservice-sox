@@ -3,6 +3,7 @@ package com.sitionix.wagssox.application;
 import com.sitionix.wagssox.domain.SiteMetaDelete;
 import com.sitionix.wagssox.domain.SiteMetaUpdate;
 import com.sitionix.wagssox.domain.WorkspaceSiteMeta;
+import com.sitionix.wagssox.domain.WorkspaceSiteMetaStatus;
 import com.sitionix.wagssox.domain.repository.WorkspaceSiteMetaRepository;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -21,58 +22,37 @@ public class SiteMetaProjectionCommandImpl implements SiteMetaProjectionCommand 
 
     @Override
     public void applySiteUpdated(final SiteMetaUpdate siteMetaUpdate) {
-        final Optional<WorkspaceSiteMeta> existingSiteMeta = this.workspaceSiteMetaRepository.findBySiteId(siteMetaUpdate.siteId());
+        final Optional<WorkspaceSiteMeta> existingSiteMeta = this.workspaceSiteMetaRepository.findBySiteId(siteMetaUpdate.getSiteId());
         existingSiteMeta.ifPresentOrElse(
-                existing -> this.workspaceSiteMetaRepository.save(this.mergedProjectionState(existing, siteMetaUpdate)),
-                () -> this.workspaceSiteMetaRepository.save(this.newProjectionState(siteMetaUpdate))
+                existing -> this.workspaceSiteMetaRepository.save(existing.toBuilder()
+                        .userId(siteMetaUpdate.getUserId())
+                        .name(siteMetaUpdate.getName())
+                        .status(siteMetaUpdate.getStatus())
+                        .type(siteMetaUpdate.getType())
+                        .description(siteMetaUpdate.getDescription())
+                        .updatedAt(siteMetaUpdate.getUpdatedAt())
+                        .build()),
+                () -> this.workspaceSiteMetaRepository.save(WorkspaceSiteMeta.builder()
+                        .siteId(siteMetaUpdate.getSiteId())
+                        .userId(siteMetaUpdate.getUserId())
+                        .name(siteMetaUpdate.getName())
+                        .status(siteMetaUpdate.getStatus())
+                        .type(siteMetaUpdate.getType())
+                        .description(siteMetaUpdate.getDescription())
+                        .createdAt(siteMetaUpdate.getUpdatedAt())
+                        .updatedAt(siteMetaUpdate.getUpdatedAt())
+                        .build())
         );
     }
 
     @Override
     public void applySiteDeleted(final SiteMetaDelete siteMetaDelete) {
-        this.workspaceSiteMetaRepository.findBySiteId(siteMetaDelete.siteId())
-                .ifPresent(existing -> this.workspaceSiteMetaRepository.save(this.deletedProjectionState(existing, siteMetaDelete)));
-    }
-
-    private WorkspaceSiteMeta mergedProjectionState(final WorkspaceSiteMeta existing, final SiteMetaUpdate siteMetaUpdate) {
-        return new WorkspaceSiteMeta(
-                existing.siteId(),
-                siteMetaUpdate.userId(),
-                siteMetaUpdate.name(),
-                siteMetaUpdate.status(),
-                siteMetaUpdate.type(),
-                siteMetaUpdate.description(),
-                existing.createdAt(),
-                siteMetaUpdate.updatedAt(),
-                existing.deletedAt()
-        );
-    }
-
-    private WorkspaceSiteMeta newProjectionState(final SiteMetaUpdate siteMetaUpdate) {
-        return new WorkspaceSiteMeta(
-                siteMetaUpdate.siteId(),
-                siteMetaUpdate.userId(),
-                siteMetaUpdate.name(),
-                siteMetaUpdate.status(),
-                siteMetaUpdate.type(),
-                siteMetaUpdate.description(),
-                siteMetaUpdate.updatedAt(),
-                siteMetaUpdate.updatedAt(),
-                null
-        );
-    }
-
-    private WorkspaceSiteMeta deletedProjectionState(final WorkspaceSiteMeta existing, final SiteMetaDelete siteMetaDelete) {
-        return new WorkspaceSiteMeta(
-                existing.siteId(),
-                siteMetaDelete.userId() == null ? existing.userId() : siteMetaDelete.userId(),
-                existing.name(),
-                existing.status(),
-                existing.type(),
-                existing.description(),
-                existing.createdAt(),
-                siteMetaDelete.deletedAt(),
-                siteMetaDelete.deletedAt()
-        );
+        this.workspaceSiteMetaRepository.findBySiteId(siteMetaDelete.getSiteId())
+                .ifPresent(existing -> this.workspaceSiteMetaRepository.save(existing.toBuilder()
+                        .userId(siteMetaDelete.getUserId() == null ? existing.getUserId() : siteMetaDelete.getUserId())
+                        .status(WorkspaceSiteMetaStatus.ARCHIVED)
+                        .updatedAt(siteMetaDelete.getDeletedAt())
+                        .deletedAt(siteMetaDelete.getDeletedAt())
+                        .build()));
     }
 }

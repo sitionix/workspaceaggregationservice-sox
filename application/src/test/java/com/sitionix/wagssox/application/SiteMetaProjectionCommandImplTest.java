@@ -201,12 +201,16 @@ class SiteMetaProjectionCommandImplTest {
                 Instant.parse("2026-02-18T12:30:00Z"),
                 null
         );
-        final SiteMetaDelete siteMetaDelete = new SiteMetaDelete(siteId, 42L, deletedAt);
+        final SiteMetaDelete siteMetaDelete = SiteMetaDelete.builder()
+                .siteId(siteId)
+                .userId(42L)
+                .deletedAt(deletedAt)
+                .build();
         final WorkspaceSiteMeta expected = this.getWorkspaceSiteMeta(
                 siteId,
                 42L,
                 "Delete Candidate",
-                WorkspaceSiteMetaStatus.PUBLISHED,
+                WorkspaceSiteMetaStatus.ARCHIVED,
                 WorkspaceSiteMetaType.BUSINESS,
                 "Description",
                 Instant.parse("2026-02-18T08:00:00Z"),
@@ -227,7 +231,11 @@ class SiteMetaProjectionCommandImplTest {
     void givenMissingSiteMeta_whenApplySiteDeleted_thenSkipProjectionSave() {
         //given
         final UUID siteId = UUID.fromString("4a872ba3-f125-48f2-ae15-6799a173d2e2");
-        final SiteMetaDelete siteMetaDelete = new SiteMetaDelete(siteId, 42L, Instant.parse("2026-02-18T13:00:00Z"));
+        final SiteMetaDelete siteMetaDelete = SiteMetaDelete.builder()
+                .siteId(siteId)
+                .userId(42L)
+                .deletedAt(Instant.parse("2026-02-18T13:00:00Z"))
+                .build();
         when(this.workspaceSiteMetaRepository.findBySiteId(siteId)).thenReturn(Optional.empty());
 
         //when
@@ -248,17 +256,17 @@ class SiteMetaProjectionCommandImplTest {
             final Instant updatedAt,
             final Instant deletedAt
     ) {
-        return new WorkspaceSiteMeta(
-                siteId,
-                userId,
-                name,
-                status,
-                type,
-                description,
-                createdAt,
-                updatedAt,
-                deletedAt
-        );
+        return WorkspaceSiteMeta.builder()
+                .siteId(siteId)
+                .userId(userId)
+                .name(name)
+                .status(status)
+                .type(type)
+                .description(description)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .deletedAt(deletedAt)
+                .build();
     }
 
     private SiteMetaUpdate getSiteMetaUpdate(
@@ -270,14 +278,14 @@ class SiteMetaProjectionCommandImplTest {
             final String description,
             final Instant updatedAt
     ) {
-        return new SiteMetaUpdate(
-                siteId,
-                userId,
-                name,
-                status,
-                type,
-                description,
-                updatedAt
-        );
+        return SiteMetaUpdate.builder()
+                .siteId(siteId)
+                .userId(userId)
+                .name(name)
+                .status(status)
+                .type(type)
+                .description(description)
+                .updatedAt(updatedAt)
+                .build();
     }
 }

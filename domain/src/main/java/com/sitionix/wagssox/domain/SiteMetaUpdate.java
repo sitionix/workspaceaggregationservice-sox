@@ -2,14 +2,22 @@ package com.sitionix.wagssox.domain;
 
 import java.time.Instant;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public record SiteMetaUpdate(
-        UUID siteId,
-        Long userId,
-        String name,
-        WorkspaceSiteMetaStatus status,
-        WorkspaceSiteMetaType type,
-        String description,
-        Instant updatedAt
-) {
+@Data
+@Builder(toBuilder = true)
+@NoArgsConstructor
+@AllArgsConstructor
+public class SiteMetaUpdate {
+
+    private UUID siteId;
+    private Long userId;
+    private String name;
+    private WorkspaceSiteMetaStatus status;
+    private WorkspaceSiteMetaType type;
+    private String description;
+    private Instant updatedAt;
 }
