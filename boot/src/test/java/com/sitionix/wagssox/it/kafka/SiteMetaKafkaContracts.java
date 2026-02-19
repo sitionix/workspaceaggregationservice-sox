@@ -13,7 +13,7 @@ public final class SiteMetaKafkaContracts {
     public static final KafkaContract<SiteMetaEnvelope> SITE_META_CREATED_INPUT =
             KafkaContract.producerContract()
                     .defaultEnvelope(SiteMetaEnvelope.class)
-                    .topic("stsssox.it.site-meta.public.unified.v1")
+                    .topic("stsssox.it.site-meta.public.v1")
                     .defaultPayload(SiteCreatedEvent.class, "defaultSiteCreatedEvent.json")
                     .defaultMetadata(Metadata.class, "defaultSiteMetaMetadata.json")
                     .payloadSerializer(AvroRecordSerializer.class)
@@ -22,7 +22,7 @@ public final class SiteMetaKafkaContracts {
     public static final KafkaContract<SiteMetaEnvelope> SITE_META_UPDATED_INPUT =
             KafkaContract.producerContract()
                     .defaultEnvelope(SiteMetaEnvelope.class)
-                    .topic("stsssox.it.site-meta.public.unified.v1")
+                    .topic("stsssox.it.site-meta.public.v1")
                     .defaultPayload(SiteUpdatedEvent.class, "defaultSiteUpdatedEvent.json")
                     .defaultMetadata(Metadata.class, "defaultSiteMetaMetadata.json")
                     .payloadSerializer(AvroRecordSerializer.class)
@@ -31,7 +31,7 @@ public final class SiteMetaKafkaContracts {
     public static final KafkaContract<SiteMetaEnvelope> SITE_META_DELETED_INPUT =
             KafkaContract.producerContract()
                     .defaultEnvelope(SiteMetaEnvelope.class)
-                    .topic("stsssox.it.site-meta.public.unified.v1")
+                    .topic("stsssox.it.site-meta.public.v1")
                     .defaultPayload(SiteDeletedEvent.class, "defaultSiteDeletedEvent.json")
                     .defaultMetadata(Metadata.class, "defaultSiteMetaMetadata.json")
                     .payloadSerializer(AvroRecordSerializer.class)
