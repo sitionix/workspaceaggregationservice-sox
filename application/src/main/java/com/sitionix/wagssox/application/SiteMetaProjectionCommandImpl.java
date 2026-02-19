@@ -22,19 +22,17 @@ public class SiteMetaProjectionCommandImpl implements SiteMetaProjectionCommand 
 
     @Override
     public void applySiteUpdated(final SiteMetaUpdate siteMetaUpdate) {
-        final Optional<WorkspaceSiteMeta> maybeExisting = this.workspaceSiteMetaRepository.findBySiteId(siteMetaUpdate.siteId());
-
-        if (maybeExisting.isEmpty()) {
-            this.workspaceSiteMetaRepository.save(WorkspaceSiteMeta.fromUpdate(siteMetaUpdate));
-            return;
-        }
-
-        final WorkspaceSiteMeta existing = maybeExisting.get();
-        if (Objects.nonNull(siteMetaUpdate.ownerUserId()) && !Objects.equals(existing.ownerUserId(), siteMetaUpdate.ownerUserId())) {
-            return;
-        }
-
-        this.workspaceSiteMetaRepository.save(existing.mergeWith(siteMetaUpdate));
+        final Optional<WorkspaceSiteMeta> existingSiteMeta = this.workspaceSiteMetaRepository.findBySiteId(siteMetaUpdate.siteId());
+        existingSiteMeta.ifPresentOrElse(
+                existing -> {
+                    if (Objects.nonNull(siteMetaUpdate.ownerUserId())
+                            && !Objects.equals(existing.ownerUserId(), siteMetaUpdate.ownerUserId())) {
+                        return;
+                    }
+                    this.workspaceSiteMetaRepository.save(existing.mergeWith(siteMetaUpdate));
+                },
+                () -> this.workspaceSiteMetaRepository.save(WorkspaceSiteMeta.fromUpdate(siteMetaUpdate))
+        );
     }
 
     @Override
