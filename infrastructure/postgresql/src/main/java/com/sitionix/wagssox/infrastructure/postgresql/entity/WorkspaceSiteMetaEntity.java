@@ -19,7 +19,7 @@ import lombok.Setter;
 @Table(
         name = "workspace_site_meta",
         indexes = {
-                @Index(name = "idx_workspace_site_meta_owner_updated", columnList = "owner_user_id,updated_at")
+                @Index(name = "idx_workspace_site_meta_user_updated", columnList = "user_id,updated_at")
         }
 )
 @Getter
@@ -32,8 +32,8 @@ public class WorkspaceSiteMetaEntity {
     @Column(name = "site_id", nullable = false)
     private UUID siteId;
 
-    @Column(name = "owner_user_id", nullable = false)
-    private Long ownerUserId;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     @Column(name = "name")
     private String name;

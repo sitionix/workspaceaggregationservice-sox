@@ -93,7 +93,7 @@ class SiteMetaProjectionCommandImplTest {
     }
 
     @Test
-    void givenExistingSiteMetaWithSameOwner_whenApplySiteUpdated_thenMergeAndSaveProjection() {
+    void givenExistingSiteMetaWithSameUser_whenApplySiteUpdated_thenMergeAndSaveProjection() {
         //given
         final UUID siteId = UUID.fromString("7adf7f5f-a55e-4688-810d-3ca8a4bb9cd4");
         final WorkspaceSiteMeta existing = this.getWorkspaceSiteMeta(
@@ -136,13 +136,13 @@ class SiteMetaProjectionCommandImplTest {
     }
 
     @Test
-    void givenExistingSiteMetaWithDifferentOwner_whenApplySiteUpdated_thenSkipProjectionUpdate() {
+    void givenExistingSiteMetaWithDifferentUser_whenApplySiteUpdated_thenSkipProjectionUpdate() {
         //given
         final UUID siteId = UUID.fromString("4559bc29-c6eb-4fdd-89d2-591dfb760f37");
         final WorkspaceSiteMeta existing = this.getWorkspaceSiteMeta(
                 siteId,
                 42L,
-                "Owner Locked",
+                "User Locked",
                 WorkspaceSiteMetaStatus.DRAFT,
                 WorkspaceSiteMetaType.PORTFOLIO,
                 "Description",
@@ -181,7 +181,7 @@ class SiteMetaProjectionCommandImplTest {
 
     private WorkspaceSiteMeta getWorkspaceSiteMeta(
             final UUID siteId,
-            final Long ownerUserId,
+            final Long userId,
             final String name,
             final WorkspaceSiteMetaStatus status,
             final WorkspaceSiteMetaType type,
@@ -191,7 +191,7 @@ class SiteMetaProjectionCommandImplTest {
     ) {
         return new WorkspaceSiteMeta(
                 siteId,
-                ownerUserId,
+                userId,
                 name,
                 status,
                 type,
@@ -203,7 +203,7 @@ class SiteMetaProjectionCommandImplTest {
 
     private SiteMetaUpdate getSiteMetaUpdate(
             final UUID siteId,
-            final Long ownerUserId,
+            final Long userId,
             final String name,
             final WorkspaceSiteMetaStatus status,
             final WorkspaceSiteMetaType type,
@@ -212,7 +212,7 @@ class SiteMetaProjectionCommandImplTest {
     ) {
         return new SiteMetaUpdate(
                 siteId,
-                ownerUserId,
+                userId,
                 name,
                 status,
                 type,

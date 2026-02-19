@@ -7,10 +7,7 @@ import com.app_afesox.stsssox.events.sitemeta.SiteUpdatedEvent;
 import com.sitionix.wagssox.application.SiteMetaProjectionCommand;
 import com.sitionix.wagssox.domain.SiteMetaUpdate;
 import com.sitionix.wagssox.domain.WorkspaceSiteMeta;
-import com.sitionix.wagssox.domain.WorkspaceSiteMetaStatus;
-import com.sitionix.wagssox.domain.WorkspaceSiteMetaType;
 import com.sitionix.wagssox.pipe.sitemeta.mapper.SiteMetaEventMapper;
-import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -73,7 +70,7 @@ class SiteMetaConsumerTest {
         //given
         final SiteMetaEnvelope envelope = mock(SiteMetaEnvelope.class);
         final SiteCreatedEvent payload = mock(SiteCreatedEvent.class);
-        final WorkspaceSiteMeta projected = this.getWorkspaceSiteMeta();
+        final WorkspaceSiteMeta projected = mock(WorkspaceSiteMeta.class);
         when(envelope.getPayload()).thenReturn(payload);
         when(this.siteMetaEventMapper.asProjection(payload, WorkspaceSiteMeta.class)).thenReturn(projected);
 
@@ -92,7 +89,7 @@ class SiteMetaConsumerTest {
         //given
         final SiteMetaEnvelope envelope = mock(SiteMetaEnvelope.class);
         final SiteUpdatedEvent payload = mock(SiteUpdatedEvent.class);
-        final SiteMetaUpdate projected = this.getSiteMetaUpdate();
+        final SiteMetaUpdate projected = mock(SiteMetaUpdate.class);
         when(envelope.getPayload()).thenReturn(payload);
         when(this.siteMetaEventMapper.asProjection(payload, SiteMetaUpdate.class)).thenReturn(projected);
 
@@ -138,30 +135,5 @@ class SiteMetaConsumerTest {
         //then
         verify(envelope, times(2)).getPayload();
         verifyNoMoreInteractions(envelope, payload);
-    }
-
-    private WorkspaceSiteMeta getWorkspaceSiteMeta() {
-        return new WorkspaceSiteMeta(
-                UUID.fromString("55db7314-63a5-49b5-bdb6-6a6cc59e61b9"),
-                17L,
-                "Site A",
-                WorkspaceSiteMetaStatus.DRAFT,
-                WorkspaceSiteMetaType.BLOG,
-                "Description",
-                Instant.parse("2026-02-18T10:00:00Z"),
-                Instant.parse("2026-02-18T10:00:00Z")
-        );
-    }
-
-    private SiteMetaUpdate getSiteMetaUpdate() {
-        return new SiteMetaUpdate(
-                UUID.fromString("d66d5d41-a121-4347-a245-0082bf9c2038"),
-                19L,
-                "Site B",
-                WorkspaceSiteMetaStatus.PUBLISHED,
-                WorkspaceSiteMetaType.BUSINESS,
-                "Updated",
-                Instant.parse("2026-02-18T12:00:00Z")
-        );
     }
 }

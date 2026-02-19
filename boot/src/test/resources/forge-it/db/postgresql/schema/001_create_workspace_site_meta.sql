@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS workspace_site_meta_types (
 
 CREATE TABLE IF NOT EXISTS workspace_site_meta (
     site_id UUID PRIMARY KEY,
-    owner_user_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
     name VARCHAR(60),
     status_id BIGINT NOT NULL REFERENCES workspace_site_meta_statuses (id),
     type_id BIGINT REFERENCES workspace_site_meta_types (id),

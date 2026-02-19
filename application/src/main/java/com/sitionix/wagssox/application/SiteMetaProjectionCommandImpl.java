@@ -24,7 +24,7 @@ public class SiteMetaProjectionCommandImpl implements SiteMetaProjectionCommand 
     public void applySiteUpdated(final SiteMetaUpdate siteMetaUpdate) {
         final Optional<WorkspaceSiteMeta> existingSiteMeta = this.workspaceSiteMetaRepository.findBySiteId(siteMetaUpdate.siteId());
         existingSiteMeta.ifPresentOrElse(
-                existing -> this.saveMergedIfOwnerMatches(existing, siteMetaUpdate),
+                existing -> this.saveMergedIfUserMatches(existing, siteMetaUpdate),
                 () -> this.workspaceSiteMetaRepository.save(this.newProjectionState(siteMetaUpdate))
         );
     }
@@ -34,9 +34,9 @@ public class SiteMetaProjectionCommandImpl implements SiteMetaProjectionCommand 
         this.workspaceSiteMetaRepository.deleteBySiteId(siteId);
     }
 
-    private void saveMergedIfOwnerMatches(final WorkspaceSiteMeta existing, final SiteMetaUpdate siteMetaUpdate) {
-        if (Objects.nonNull(siteMetaUpdate.ownerUserId())
-                && !Objects.equals(existing.ownerUserId(), siteMetaUpdate.ownerUserId())) {
+    private void saveMergedIfUserMatches(final WorkspaceSiteMeta existing, final SiteMetaUpdate siteMetaUpdate) {
+        if (Objects.nonNull(siteMetaUpdate.userId())
+                && !Objects.equals(existing.userId(), siteMetaUpdate.userId())) {
             return;
         }
         this.workspaceSiteMetaRepository.save(this.mergedProjectionState(existing, siteMetaUpdate));
@@ -45,7 +45,7 @@ public class SiteMetaProjectionCommandImpl implements SiteMetaProjectionCommand 
     private WorkspaceSiteMeta newProjectionState(final SiteMetaUpdate siteMetaUpdate) {
         return new WorkspaceSiteMeta(
                 siteMetaUpdate.siteId(),
-                siteMetaUpdate.ownerUserId(),
+                siteMetaUpdate.userId(),
                 siteMetaUpdate.name(),
                 siteMetaUpdate.status(),
                 siteMetaUpdate.type(),
@@ -58,7 +58,7 @@ public class SiteMetaProjectionCommandImpl implements SiteMetaProjectionCommand 
     private WorkspaceSiteMeta mergedProjectionState(final WorkspaceSiteMeta existing, final SiteMetaUpdate siteMetaUpdate) {
         return new WorkspaceSiteMeta(
                 existing.siteId(),
-                existing.ownerUserId(),
+                existing.userId(),
                 Objects.nonNull(siteMetaUpdate.name()) ? siteMetaUpdate.name() : existing.name(),
                 Objects.nonNull(siteMetaUpdate.status()) ? siteMetaUpdate.status() : existing.status(),
                 Objects.nonNull(siteMetaUpdate.type()) ? siteMetaUpdate.type() : existing.type(),

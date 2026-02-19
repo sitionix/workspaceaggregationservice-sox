@@ -5,7 +5,7 @@ import java.util.UUID;
 
 public record SiteMetaUpdate(
         UUID siteId,
-        Long ownerUserId,
+        Long userId,
         String name,
         WorkspaceSiteMetaStatus status,
         WorkspaceSiteMetaType type,
