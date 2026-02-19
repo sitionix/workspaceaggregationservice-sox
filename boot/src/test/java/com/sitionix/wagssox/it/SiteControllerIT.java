@@ -17,8 +17,8 @@ class SiteControllerIT {
     private TestManager testManager;
 
     @Test
-    @DisplayName("given active archived and metadata-deletedAt sites when get first page then return only non-archived sorted by updatedAt desc")
-    void givenActiveArchivedAndMetadataDeletedAtSites_whenGetFirstPage_thenReturnOnlyNonArchivedSortedByUpdatedAtDesc() {
+    @DisplayName("given active archived and draft-with-deletedAt-metadata sites when get first page then return only non-archived sorted by updatedAt desc")
+    void givenActiveArchivedAndDraftWithDeletedAtMetadataSites_whenGetFirstPage_thenReturnOnlyNonArchivedSortedByUpdatedAtDesc() {
         //given
         this.testManager.postgresql()
                 .create()
@@ -30,7 +30,7 @@ class SiteControllerIT {
                 .to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withJson("workspaceSiteMetaGetSitesDraft2.json"))
                 .to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withJson("workspaceSiteMetaGetSitesPublishedUntitled.json"))
                 .to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withJson("workspaceSiteMetaGetSitesArchived.json"))
-                .to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withJson("workspaceSiteMetaGetSitesDeletedAtMetadata.json"))
+                .to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withJson("workspaceSiteMetaGetSitesDraftWithDeletedAtMetadata.json"))
                 .to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withJson("workspaceSiteMetaGetSitesOtherUser.json"))
                 .build();
 
