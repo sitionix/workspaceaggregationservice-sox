@@ -1,21 +1,18 @@
 package com.sitionix.wagssox.domain;
 
 import java.util.Arrays;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
+@Getter
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public enum WorkspaceSiteMetaStatus {
     DRAFT(1L),
     PUBLISHED(2L),
     ARCHIVED(3L);
 
     private final Long id;
-
-    WorkspaceSiteMetaStatus(final Long id) {
-        this.id = id;
-    }
-
-    public Long getId() {
-        return this.id;
-    }
 
     public static WorkspaceSiteMetaStatus fromId(final Long id) {
         if (id == null) {
