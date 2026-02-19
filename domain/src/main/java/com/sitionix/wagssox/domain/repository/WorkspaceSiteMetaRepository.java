@@ -1,7 +1,7 @@
 package com.sitionix.wagssox.domain.repository;
 
 import com.sitionix.wagssox.domain.WorkspaceSiteMeta;
-import com.sitionix.wagssox.domain.WorkspaceSiteMetaSlice;
+import com.sitionix.wagssox.domain.WorkspaceSitesPage;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -32,8 +32,8 @@ public interface WorkspaceSiteMetaRepository {
      * @param userId user identifier.
      * @param page zero-based page number.
      * @param size maximum number of records to load.
-     * @return ordered slice of records.
+     * @return ordered page of records.
      */
-    WorkspaceSiteMetaSlice findActiveByUserId(Long userId, Integer page, Integer size);
+    WorkspaceSitesPage findActiveByUserId(Long userId, Integer page, Integer size);
 
 }

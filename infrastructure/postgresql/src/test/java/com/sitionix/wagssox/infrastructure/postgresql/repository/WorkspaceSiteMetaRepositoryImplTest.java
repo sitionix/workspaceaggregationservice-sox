@@ -1,7 +1,7 @@
 package com.sitionix.wagssox.infrastructure.postgresql.repository;
 
 import com.sitionix.wagssox.domain.WorkspaceSiteMeta;
-import com.sitionix.wagssox.domain.WorkspaceSiteMetaSlice;
+import com.sitionix.wagssox.domain.WorkspaceSitesPage;
 import com.sitionix.wagssox.infrastructure.postgresql.entity.WorkspaceSiteMetaEntity;
 import com.sitionix.wagssox.infrastructure.postgresql.jpa.WorkspaceSiteMetaJpaRepository;
 import com.sitionix.wagssox.infrastructure.postgresql.mapper.WorkspaceSiteMetaInfraMapper;
@@ -15,9 +15,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.SliceImpl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -97,24 +97,27 @@ class WorkspaceSiteMetaRepositoryImplTest {
         final Integer page = 1;
         final Integer size = 20;
         final WorkspaceSiteMetaEntity entity = mock(WorkspaceSiteMetaEntity.class);
-        final WorkspaceSiteMeta mapped = mock(WorkspaceSiteMeta.class);
-        final WorkspaceSiteMetaSlice expected = WorkspaceSiteMetaSlice.builder()
-                .items(List.of(mapped))
+        final WorkspaceSiteMeta mapped = WorkspaceSiteMeta.builder().name(null).build();
+        final WorkspaceSiteMeta expectedSite = WorkspaceSiteMeta.builder().name("Untitled site").build();
+        final WorkspaceSitesPage expected = WorkspaceSitesPage.builder()
+                .items(List.of(expectedSite))
+                .page(page)
+                .size(size)
                 .hasNext(true)
                 .build();
         when(this.workspaceSiteMetaJpaRepository.findByUserIdAndStatus_IdNotAndDeletedAtIsNull(
                 eq(userId),
                 eq(3L),
                 any(Pageable.class)
-        )).thenReturn(new SliceImpl<>(
+        )).thenReturn(new PageImpl<>(
                 List.of(entity),
                 PageRequest.of(page, size),
-                true
+                41
         ));
         when(this.workspaceSiteMetaInfraMapper.asDomain(entity)).thenReturn(mapped);
 
         //when
-        final WorkspaceSiteMetaSlice actual = this.workspaceSiteMetaRepository.findActiveByUserId(userId, page, size);
+        final WorkspaceSitesPage actual = this.workspaceSiteMetaRepository.findActiveByUserId(userId, page, size);
 
         //then
         assertThat(actual).isEqualTo(expected);
