@@ -5,6 +5,7 @@ import com.sitionix.wagssox.domain.SiteMetaUpdate;
 import com.sitionix.wagssox.domain.WorkspaceSiteMeta;
 import com.sitionix.wagssox.domain.WorkspaceSiteMetaStatus;
 import com.sitionix.wagssox.domain.repository.WorkspaceSiteMetaRepository;
+import com.sitionix.wagssox.domain.usecase.SiteMetaProjectionCommand;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
