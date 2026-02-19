@@ -59,7 +59,7 @@ class SiteMetaProjectionCommandImplTest {
     }
 
     @Test
-    void givenMissingSiteMeta_whenApplySiteUpdated_thenSkipProjectionUpdate() {
+    void givenMissingSiteMeta_whenApplySiteUpdated_thenCreateProjectionFromUpdate() {
         //given
         final UUID siteId = UUID.fromString("3db551f5-98f2-4f9a-b4f5-a5e8f2f13fcb");
         final Instant updatedAt = Instant.parse("2026-02-18T11:30:00Z");
@@ -72,6 +72,16 @@ class SiteMetaProjectionCommandImplTest {
                 "From update",
                 updatedAt
         );
+        final WorkspaceSiteMeta expected = this.getWorkspaceSiteMeta(
+                siteId,
+                55L,
+                "Projected Site",
+                WorkspaceSiteMetaStatus.DRAFT,
+                WorkspaceSiteMetaType.BLOG,
+                "From update",
+                updatedAt,
+                updatedAt
+        );
         when(this.workspaceSiteMetaRepository.findBySiteId(siteId)).thenReturn(Optional.empty());
 
         //when
@@ -79,6 +89,7 @@ class SiteMetaProjectionCommandImplTest {
 
         //then
         verify(this.workspaceSiteMetaRepository).findBySiteId(siteId);
+        verify(this.workspaceSiteMetaRepository).save(expected);
     }
 
     @Test
@@ -125,7 +136,7 @@ class SiteMetaProjectionCommandImplTest {
     }
 
     @Test
-    void givenExistingSiteMetaWithDifferentUser_whenApplySiteUpdated_thenSkipProjectionUpdate() {
+    void givenExistingSiteMetaWithDifferentUser_whenApplySiteUpdated_thenMergeAndSaveProjection() {
         //given
         final UUID siteId = UUID.fromString("4559bc29-c6eb-4fdd-89d2-591dfb760f37");
         final WorkspaceSiteMeta existing = this.getWorkspaceSiteMeta(
@@ -147,6 +158,16 @@ class SiteMetaProjectionCommandImplTest {
                 "Should Not Apply",
                 Instant.parse("2026-02-18T12:30:00Z")
         );
+        final WorkspaceSiteMeta expected = this.getWorkspaceSiteMeta(
+                siteId,
+                999L,
+                "Should Not Apply",
+                WorkspaceSiteMetaStatus.PUBLISHED,
+                WorkspaceSiteMetaType.STORE,
+                "Should Not Apply",
+                Instant.parse("2026-02-18T08:00:00Z"),
+                Instant.parse("2026-02-18T12:30:00Z")
+        );
         when(this.workspaceSiteMetaRepository.findBySiteId(siteId)).thenReturn(Optional.of(existing));
 
         //when
@@ -154,6 +175,7 @@ class SiteMetaProjectionCommandImplTest {
 
         //then
         verify(this.workspaceSiteMetaRepository).findBySiteId(siteId);
+        verify(this.workspaceSiteMetaRepository).save(expected);
     }
 
     @Test
