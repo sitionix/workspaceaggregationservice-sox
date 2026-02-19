@@ -111,8 +111,8 @@ class SiteMetaProjectionCommandImplTest {
                 42L,
                 "New Name",
                 WorkspaceSiteMetaStatus.PUBLISHED,
-                null,
-                null,
+                WorkspaceSiteMetaType.BUSINESS,
+                "New description",
                 Instant.parse("2026-02-18T11:00:00Z")
         );
         final WorkspaceSiteMeta expected = this.getWorkspaceSiteMeta(
@@ -120,8 +120,8 @@ class SiteMetaProjectionCommandImplTest {
                 42L,
                 "New Name",
                 WorkspaceSiteMetaStatus.PUBLISHED,
-                WorkspaceSiteMetaType.PORTFOLIO,
-                "Old description",
+                WorkspaceSiteMetaType.BUSINESS,
+                "New description",
                 Instant.parse("2026-02-18T08:00:00Z"),
                 Instant.parse("2026-02-18T11:00:00Z")
         );

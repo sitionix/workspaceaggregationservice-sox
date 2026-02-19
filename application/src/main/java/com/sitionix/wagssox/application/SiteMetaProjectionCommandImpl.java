@@ -3,7 +3,6 @@ package com.sitionix.wagssox.application;
 import com.sitionix.wagssox.domain.SiteMetaUpdate;
 import com.sitionix.wagssox.domain.WorkspaceSiteMeta;
 import com.sitionix.wagssox.domain.repository.WorkspaceSiteMetaRepository;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -37,11 +36,11 @@ public class SiteMetaProjectionCommandImpl implements SiteMetaProjectionCommand 
     private WorkspaceSiteMeta mergedProjectionState(final WorkspaceSiteMeta existing, final SiteMetaUpdate siteMetaUpdate) {
         return new WorkspaceSiteMeta(
                 existing.siteId(),
-                Objects.nonNull(siteMetaUpdate.userId()) ? siteMetaUpdate.userId() : existing.userId(),
-                Objects.nonNull(siteMetaUpdate.name()) ? siteMetaUpdate.name() : existing.name(),
-                Objects.nonNull(siteMetaUpdate.status()) ? siteMetaUpdate.status() : existing.status(),
-                Objects.nonNull(siteMetaUpdate.type()) ? siteMetaUpdate.type() : existing.type(),
-                Objects.nonNull(siteMetaUpdate.description()) ? siteMetaUpdate.description() : existing.description(),
+                siteMetaUpdate.userId(),
+                siteMetaUpdate.name(),
+                siteMetaUpdate.status(),
+                siteMetaUpdate.type(),
+                siteMetaUpdate.description(),
                 existing.createdAt(),
                 siteMetaUpdate.updatedAt()
         );
