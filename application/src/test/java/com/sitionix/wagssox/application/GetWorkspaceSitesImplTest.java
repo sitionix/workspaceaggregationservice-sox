@@ -1,10 +1,8 @@
 package com.sitionix.wagssox.application;
 
 import com.sitionix.forge.security.server.user.ForgeUserClient;
-import com.sitionix.wagssox.domain.WorkspaceSiteMeta;
 import com.sitionix.wagssox.domain.WorkspaceSitesPage;
 import com.sitionix.wagssox.domain.repository.WorkspaceSiteMetaRepository;
-import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,13 +46,7 @@ class GetWorkspaceSitesImplTest {
         //given
         final Long userId = 123L;
         final Pageable pageable = PageRequest.of(0, 20);
-        final WorkspaceSiteMeta workspaceSiteMeta = mock(WorkspaceSiteMeta.class);
-        final WorkspaceSitesPage repositoryResponse = WorkspaceSitesPage.builder()
-                .items(List.of(workspaceSiteMeta))
-                .page(pageable.getPageNumber())
-                .size(pageable.getPageSize())
-                .hasNext(true)
-                .build();
+        final WorkspaceSitesPage repositoryResponse = mock(WorkspaceSitesPage.class);
         when(this.forgeUserClient.getUserId()).thenReturn(userId);
         when(this.workspaceSiteMetaRepository.findActiveByUserId(userId, pageable)).thenReturn(repositoryResponse);
 
@@ -72,13 +64,7 @@ class GetWorkspaceSitesImplTest {
         //given
         final Long userId = 456L;
         final Pageable pageable = PageRequest.of(1, 20);
-        final WorkspaceSiteMeta workspaceSiteMeta = mock(WorkspaceSiteMeta.class);
-        final WorkspaceSitesPage repositoryResponse = WorkspaceSitesPage.builder()
-                .items(List.of(workspaceSiteMeta))
-                .page(pageable.getPageNumber())
-                .size(pageable.getPageSize())
-                .hasNext(false)
-                .build();
+        final WorkspaceSitesPage repositoryResponse = mock(WorkspaceSitesPage.class);
         when(this.forgeUserClient.getUserId()).thenReturn(userId);
         when(this.workspaceSiteMetaRepository.findActiveByUserId(userId, pageable)).thenReturn(repositoryResponse);
 

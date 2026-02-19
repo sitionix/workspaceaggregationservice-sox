@@ -1,0 +1,17 @@
+{
+  "siteId": "00000000-0000-0000-0000-000000000900",
+  "userId": 123,
+  "name": "Archived site",
+  "status": {
+    "id": 3,
+    "description": "ARCHIVED"
+  },
+  "type": {
+    "id": 1,
+    "description": "PORTFOLIO"
+  },
+  "description": "Archived description",
+  "createdAt": "2026-01-01T00:00:00Z",
+  "updatedAt": "2026-01-01T00:15:00Z",
+  "deletedAt": null
+}
