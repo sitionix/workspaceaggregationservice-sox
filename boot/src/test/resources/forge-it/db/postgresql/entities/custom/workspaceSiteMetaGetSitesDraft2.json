@@ -1,0 +1,17 @@
+{
+  "siteId": "00000000-0000-0000-0000-000000000002",
+  "userId": 123,
+  "name": "Draft site 2",
+  "status": {
+    "id": 1,
+    "description": "DRAFT"
+  },
+  "type": {
+    "id": 1,
+    "description": "PORTFOLIO"
+  },
+  "description": "Description 2",
+  "createdAt": "2026-01-01T00:00:00Z",
+  "updatedAt": "2026-01-01T00:00:05Z",
+  "deletedAt": null
+}

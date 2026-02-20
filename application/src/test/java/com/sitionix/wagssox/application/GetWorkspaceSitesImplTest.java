@@ -1,0 +1,93 @@
+package com.sitionix.wagssox.application;
+
+import com.sitionix.forge.security.server.user.ForgeUserClient;
+import com.sitionix.wagssox.domain.WorkspaceSitesPage;
+import com.sitionix.wagssox.domain.repository.WorkspaceSiteMetaRepository;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.BadCredentialsException;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class GetWorkspaceSitesImplTest {
+
+    @Mock
+    private WorkspaceSiteMetaRepository workspaceSiteMetaRepository;
+
+    @Mock
+    private ForgeUserClient forgeUserClient;
+
+    private GetWorkspaceSitesImpl getWorkspaceSites;
+
+    @BeforeEach
+    void setUp() {
+        this.getWorkspaceSites = new GetWorkspaceSitesImpl(this.workspaceSiteMetaRepository, this.forgeUserClient);
+    }
+
+    @AfterEach
+    void tearDown() {
+        verifyNoMoreInteractions(this.workspaceSiteMetaRepository, this.forgeUserClient);
+    }
+
+    @Test
+    void givenWorkspaceSitesPage_whenExecute_thenReturnWorkspaceSitesPageFromRepository() {
+        //given
+        final Long userId = 123L;
+        final Pageable pageable = PageRequest.of(0, 20);
+        final WorkspaceSitesPage repositoryResponse = mock(WorkspaceSitesPage.class);
+        when(this.forgeUserClient.getUserId()).thenReturn(userId);
+        when(this.workspaceSiteMetaRepository.findActiveByUserId(userId, pageable)).thenReturn(repositoryResponse);
+
+        //when
+        final WorkspaceSitesPage actual = this.getWorkspaceSites.execute(pageable);
+
+        //then
+        assertThat(actual).isEqualTo(repositoryResponse);
+        verify(this.forgeUserClient).getUserId();
+        verify(this.workspaceSiteMetaRepository).findActiveByUserId(userId, pageable);
+    }
+
+    @Test
+    void givenSecondPage_whenExecute_thenReturnSecondPageFromRepository() {
+        //given
+        final Long userId = 456L;
+        final Pageable pageable = PageRequest.of(1, 20);
+        final WorkspaceSitesPage repositoryResponse = mock(WorkspaceSitesPage.class);
+        when(this.forgeUserClient.getUserId()).thenReturn(userId);
+        when(this.workspaceSiteMetaRepository.findActiveByUserId(userId, pageable)).thenReturn(repositoryResponse);
+
+        //when
+        final WorkspaceSitesPage actual = this.getWorkspaceSites.execute(pageable);
+
+        //then
+        assertThat(actual).isEqualTo(repositoryResponse);
+        verify(this.forgeUserClient).getUserId();
+        verify(this.workspaceSiteMetaRepository).findActiveByUserId(userId, pageable);
+    }
+
+    @Test
+    void givenMissingUserContext_whenExecute_thenThrowBadCredentialsException() {
+        //given
+        final Pageable pageable = PageRequest.of(0, 20);
+        when(this.forgeUserClient.getUserId()).thenThrow(new BadCredentialsException("Authentication required."));
+
+        //when then
+        assertThatThrownBy(() -> this.getWorkspaceSites.execute(pageable))
+                .isInstanceOf(BadCredentialsException.class)
+                .hasMessage("Authentication required.");
+
+        verify(this.forgeUserClient).getUserId();
+    }
+}

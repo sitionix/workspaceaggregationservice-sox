@@ -1,0 +1,43 @@
+{
+  "items": [
+    {
+      "siteId": "00000000-0000-0000-0000-000000000901",
+      "name": "Draft with deletedAt metadata",
+      "status": "DRAFT",
+      "type": "PORTFOLIO",
+      "description": "Description with deletedAt metadata",
+      "createdAt": "2026-01-01T00:00:00Z",
+      "updatedAt": "2026-01-01T00:15:01Z"
+    },
+    {
+      "siteId": "00000000-0000-0000-0000-000000000003",
+      "name": "Untitled site",
+      "status": "PUBLISHED",
+      "type": "PORTFOLIO",
+      "description": "Description 3",
+      "createdAt": "2026-01-01T00:00:00Z",
+      "updatedAt": "2026-01-01T00:00:20Z"
+    },
+    {
+      "siteId": "00000000-0000-0000-0000-000000000001",
+      "name": "Draft site 1",
+      "status": "DRAFT",
+      "type": "PORTFOLIO",
+      "description": "Description 1",
+      "createdAt": "2026-01-01T00:00:00Z",
+      "updatedAt": "2026-01-01T00:00:10Z"
+    },
+    {
+      "siteId": "00000000-0000-0000-0000-000000000002",
+      "name": "Draft site 2",
+      "status": "DRAFT",
+      "type": "PORTFOLIO",
+      "description": "Description 2",
+      "createdAt": "2026-01-01T00:00:00Z",
+      "updatedAt": "2026-01-01T00:00:05Z"
+    }
+  ],
+  "page": 0,
+  "size": 20,
+  "hasNext": false
+}
