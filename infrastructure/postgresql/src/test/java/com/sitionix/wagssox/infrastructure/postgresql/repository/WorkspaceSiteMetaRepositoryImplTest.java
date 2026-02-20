@@ -5,6 +5,7 @@ import com.sitionix.wagssox.domain.WorkspaceSitesPage;
 import com.sitionix.wagssox.infrastructure.postgresql.entity.WorkspaceSiteMetaEntity;
 import com.sitionix.wagssox.infrastructure.postgresql.jpa.WorkspaceSiteMetaJpaRepository;
 import com.sitionix.wagssox.infrastructure.postgresql.mapper.WorkspaceSiteMetaInfraMapper;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
@@ -92,7 +94,7 @@ class WorkspaceSiteMetaRepositoryImplTest {
         //given
         final Long userId = 123L;
         final Pageable pageable = PageRequest.of(1, 20);
-        final Page<WorkspaceSiteMetaEntity> entityPage = mock(Page.class);
+        final Page<WorkspaceSiteMetaEntity> entityPage = this.getWorkspaceSiteMetaEntityPage();
         final WorkspaceSitesPage expected = mock(WorkspaceSitesPage.class);
         when(this.workspaceSiteMetaJpaRepository.findActiveByUserId(
                 eq(userId),
@@ -112,5 +114,9 @@ class WorkspaceSiteMetaRepositoryImplTest {
                 eq(pageable)
         );
         verify(this.workspaceSiteMetaInfraMapper).asWorkspaceSitesPage(entityPage);
+    }
+
+    private Page<WorkspaceSiteMetaEntity> getWorkspaceSiteMetaEntityPage() {
+        return new PageImpl<>(List.of(mock(WorkspaceSiteMetaEntity.class)));
     }
 }
