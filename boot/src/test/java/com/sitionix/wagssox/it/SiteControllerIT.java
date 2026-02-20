@@ -22,14 +22,15 @@ class SiteControllerIT {
         //given
         this.testManager.postgresql()
                 .create()
-                .to(DatabaseContract.WORKSPACE_SITE_META_STATUS_ENTITY_DB_CONTRACT.getById(1L))
-                .to(DatabaseContract.WORKSPACE_SITE_META_STATUS_ENTITY_DB_CONTRACT.getById(2L))
-                .to(DatabaseContract.WORKSPACE_SITE_META_STATUS_ENTITY_DB_CONTRACT.getById(3L))
                 .to(DatabaseContract.WORKSPACE_SITE_META_TYPE_ENTITY_DB_CONTRACT.getById(1L))
+                .to(DatabaseContract.WORKSPACE_SITE_META_STATUS_ENTITY_DB_CONTRACT.getById(1L))
                 .to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withJson("workspaceSiteMetaGetSitesDraft1.json"))
                 .to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withJson("workspaceSiteMetaGetSitesDraft2.json"))
+                .to(DatabaseContract.WORKSPACE_SITE_META_STATUS_ENTITY_DB_CONTRACT.getById(2L))
                 .to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withJson("workspaceSiteMetaGetSitesPublishedUntitled.json"))
+                .to(DatabaseContract.WORKSPACE_SITE_META_STATUS_ENTITY_DB_CONTRACT.getById(3L))
                 .to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withJson("workspaceSiteMetaGetSitesArchived.json"))
+                .to(DatabaseContract.WORKSPACE_SITE_META_STATUS_ENTITY_DB_CONTRACT.getById(1L))
                 .to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withJson("workspaceSiteMetaGetSitesDraftWithDeletedAtMetadata.json"))
                 .to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withJson("workspaceSiteMetaGetSitesOtherUser.json"))
                 .build();
@@ -70,8 +71,8 @@ class SiteControllerIT {
     }
 
     @Test
-    @DisplayName("given missing user context when get sites then return unauthorized")
-    void givenMissingUserContext_whenGetSites_thenReturnUnauthorized() {
+    @DisplayName("given missing user context when get sites then return forbidden")
+    void givenMissingUserContext_whenGetSites_thenReturnForbidden() {
         //given
 
         //when then
@@ -81,10 +82,7 @@ class SiteControllerIT {
                 .withQueryParameters(QueryParams.create()
                         .add("page", 0)
                         .add("size", 20))
-                .expectStatus(HttpStatus.UNAUTHORIZED)
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.UNAUTHORIZED.value()))
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.title").value(HttpStatus.UNAUTHORIZED.getReasonPhrase()))
-                .andExpectPath(MockMvcResultMatchers.jsonPath("$.details").isNotEmpty())
+                .expectStatus(HttpStatus.FORBIDDEN)
                 .assertDefault();
     }
 

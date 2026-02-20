@@ -1,6 +1,7 @@
 package com.sitionix.wagssox.api.handler;
 
 import com.app_afesox.wagssox.api_first.dto.ErrorDTO;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +33,15 @@ public class RestExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorDTO> handleIllegalArgumentException(final IllegalArgumentException ex) {
         return this.buildError(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorDTO> handleConstraintViolationException(final ConstraintViolationException ex) {
+        final String details = ex.getConstraintViolations().stream()
+                .findFirst()
+                .map(constraintViolation -> constraintViolation.getMessage())
+                .orElse("Validation failed");
+        return this.buildError(HttpStatus.BAD_REQUEST, details);
     }
 
     private ResponseEntity<ErrorDTO> buildError(final HttpStatus status, final String details) {
