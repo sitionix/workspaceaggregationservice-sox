@@ -5,9 +5,11 @@ import com.sitionix.wagssox.domain.WorkspaceSitesPage;
 import com.sitionix.wagssox.infrastructure.postgresql.entity.WorkspaceSiteMetaEntity;
 import com.sitionix.wagssox.infrastructure.postgresql.jpa.WorkspaceSiteMetaJpaRepository;
 import com.sitionix.wagssox.infrastructure.postgresql.mapper.WorkspaceSiteMetaInfraMapper;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -97,9 +99,9 @@ class WorkspaceSiteMetaRepositoryImplTest {
         final Page<WorkspaceSiteMetaEntity> entityPage = this.getWorkspaceSiteMetaEntityPage();
         final WorkspaceSitesPage expected = mock(WorkspaceSitesPage.class);
         when(this.workspaceSiteMetaJpaRepository.findActiveByUserId(
-                eq(userId),
-                eq(3L),
-                eq(pageable)
+                userId,
+                3L,
+                pageable
         )).thenReturn(entityPage);
         when(this.workspaceSiteMetaInfraMapper.asWorkspaceSitesPage(entityPage)).thenReturn(expected);
 
@@ -109,9 +111,9 @@ class WorkspaceSiteMetaRepositoryImplTest {
         //then
         assertThat(actual).isEqualTo(expected);
         verify(this.workspaceSiteMetaJpaRepository).findActiveByUserId(
-                eq(userId),
-                eq(3L),
-                eq(pageable)
+                userId,
+                3L,
+                pageable
         );
         verify(this.workspaceSiteMetaInfraMapper).asWorkspaceSitesPage(entityPage);
     }
