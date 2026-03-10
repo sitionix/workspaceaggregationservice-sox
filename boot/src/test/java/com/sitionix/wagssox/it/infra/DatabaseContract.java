@@ -4,6 +4,7 @@ import com.sitionix.forgeit.core.contract.ForgeDbContracts;
 import com.sitionix.forgeit.domain.contract.DbContract;
 import com.sitionix.forgeit.domain.contract.DbContractsDsl;
 import com.sitionix.forgeit.domain.contract.clean.CleanupPolicy;
+import com.sitionix.forge.inbox.postgres.entity.ForgeInboxEventEntity;
 import com.sitionix.wagssox.infrastructure.postgresql.entity.WorkspaceSiteMetaEntity;
 import com.sitionix.wagssox.infrastructure.postgresql.entity.WorkspaceSiteMetaStatusEntity;
 import com.sitionix.wagssox.infrastructure.postgresql.entity.WorkspaceSiteMetaTypeEntity;
@@ -25,6 +26,11 @@ public class DatabaseContract {
             DbContractsDsl.entity(WorkspaceSiteMetaEntity.class)
                     .dependsOn(WORKSPACE_SITE_META_STATUS_ENTITY_DB_CONTRACT, WorkspaceSiteMetaEntity::setStatus)
                     .dependsOn(WORKSPACE_SITE_META_TYPE_ENTITY_DB_CONTRACT, WorkspaceSiteMetaEntity::setType)
+                    .cleanupPolicy(CleanupPolicy.DELETE_ALL)
+                    .build();
+
+    public static final DbContract<ForgeInboxEventEntity> FORGE_INBOX_EVENT_ENTITY_DB_CONTRACT =
+            DbContractsDsl.entity(ForgeInboxEventEntity.class)
                     .cleanupPolicy(CleanupPolicy.DELETE_ALL)
                     .build();
 

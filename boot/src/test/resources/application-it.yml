@@ -7,3 +7,9 @@ forge-it:
   modules:
     mock-mvc:
       default-token: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzaXRpb25peC1pbnRlcm5hbCIsInN1YiI6InNpdGlvbml4QmZmIiwiYXVkIjoic2l0aW9uaXhXb3Jrc3BhY2UiLCJpYXQiOjAsImV4cCI6NDEwMjQ0NDgwMH0.U9inRCjki9h-pptSAmD_wPzZPc_AcgGRA1GUl36Nfr8"
+forge:
+  inbox:
+    enabled: true
+    domain-store: POSTGRES
+    worker:
+      fixed-delay: 100ms

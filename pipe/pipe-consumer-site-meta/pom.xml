@@ -14,6 +14,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.sitionix.forge</groupId>
+            <artifactId>forgecommon-inbox-core</artifactId>
+            <version>${forge.common.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.afesox</groupId>
             <artifactId>app-afesox-stsssox-event-sitemeta-consumer-stable</artifactId>
             <version>0.0.1</version>
