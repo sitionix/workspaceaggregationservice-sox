@@ -37,7 +37,7 @@ class SiteDeletedInboxEventHandlerTest {
     void givenSiteDeletedPayload_whenHandle_thenApplySiteDeletedProjection() {
         //given
         final SiteMetaDelete siteMetaDelete = mock(SiteMetaDelete.class);
-        final SiteDeletedInboxPayload payload = new SiteDeletedInboxPayload(siteMetaDelete, "idempotency-3");
+        final SiteDeletedInboxPayload payload = new SiteDeletedInboxPayload(siteMetaDelete);
         final InboxEvent<SiteDeletedInboxPayload> event = InboxEvent.<SiteDeletedInboxPayload>builder()
                 .eventType("SITE_DELETED")
                 .payload(payload)

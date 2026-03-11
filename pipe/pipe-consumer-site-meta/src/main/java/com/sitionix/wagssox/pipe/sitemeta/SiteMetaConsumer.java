@@ -8,9 +8,11 @@ import com.app_afesox.stsssox.events.sitemeta.SiteUpdatedEvent;
 import com.app_afesox.stsssox.events.sitemeta.kafka.SitemetaV1ConsumerHandler;
 import com.sitionix.forge.inbox.core.port.ForgeInbox;
 import com.sitionix.forge.inbox.core.port.ForgeInboxPayload;
+import com.sitionix.forge.inbox.core.port.InboxReceiveMetadata;
 import com.sitionix.wagssox.domain.SiteMetaDelete;
 import com.sitionix.wagssox.domain.SiteMetaUpdate;
 import com.sitionix.wagssox.domain.WorkspaceSiteMeta;
+import com.sitionix.wagssox.domain.event.SiteMetaEventType;
 import com.sitionix.wagssox.domain.event.payload.SiteCreatedInboxPayload;
 import com.sitionix.wagssox.domain.event.payload.SiteDeletedInboxPayload;
 import com.sitionix.wagssox.domain.event.payload.SiteMetaInboxPayload;
@@ -32,39 +34,65 @@ public class SiteMetaConsumer implements SitemetaV1ConsumerHandler {
 
     @Override
     public void consumeSiteMeta(final SiteMetaEnvelope siteMetaEnvelope) {
-        if (isNull(siteMetaEnvelope) || isNull(siteMetaEnvelope.getPayload())) {
+        if (isNull(siteMetaEnvelope)) {
+            return;
+        }
+        final Object payload = siteMetaEnvelope.getPayload();
+        if (isNull(payload)) {
             return;
         }
         final Metadata metadata = siteMetaEnvelope.getMetadata();
-        final SiteMetaInboxPayload inboxPayload = this.asInboxPayload(
-                siteMetaEnvelope.getPayload(),
-                metadata == null ? null : metadata.getIdempotencyId()
-        );
+        final String eventType = this.resolveEventType(metadata);
+        if (isNull(eventType)) {
+            return;
+        }
+        final String idempotencyKey = metadata.getIdempotencyId();
+        final SiteMetaInboxPayload inboxPayload = this.asInboxPayload(payload);
         if (inboxPayload == null) {
             return;
         }
-        this.forgeInbox.receive(inboxPayload);
+        this.forgeInbox.receive(inboxPayload, new InboxReceiveMetadata(eventType, idempotencyKey, null));
     }
 
-    private SiteMetaInboxPayload asInboxPayload(final Object payload,
-                                                final String idempotencyKey) {
+    private SiteMetaInboxPayload asInboxPayload(final Object payload) {
         switch (payload) {
             case SiteCreatedEvent createdEvent -> {
                 final WorkspaceSiteMeta siteMeta = this.siteMetaEventMapper.asProjection(createdEvent, WorkspaceSiteMeta.class);
-                return new SiteCreatedInboxPayload(siteMeta, idempotencyKey);
+                return new SiteCreatedInboxPayload(siteMeta);
             }
             case SiteUpdatedEvent updatedEvent -> {
                 final SiteMetaUpdate siteMetaUpdate = this.siteMetaEventMapper.asProjection(updatedEvent, SiteMetaUpdate.class);
-                return new SiteUpdatedInboxPayload(siteMetaUpdate, idempotencyKey);
+                return new SiteUpdatedInboxPayload(siteMetaUpdate);
             }
             case SiteDeletedEvent deletedEvent -> {
                 final SiteMetaDelete siteMetaDelete = this.siteMetaEventMapper.asProjection(deletedEvent, SiteMetaDelete.class);
-                return new SiteDeletedInboxPayload(siteMetaDelete, idempotencyKey);
+                return new SiteDeletedInboxPayload(siteMetaDelete);
             }
             default -> {
                 log.warn("Skip unsupported site-meta payload type: {}", payload.getClass().getName());
                 return null;
             }
+        }
+    }
+
+    private String resolveEventType(final Metadata metadata) {
+        if (metadata == null) {
+            log.warn("Skip site-meta message because metadata.eventType is missing");
+            return null;
+        }
+        final String metadataEventType = metadata.getEventType();
+        if (metadataEventType == null || metadataEventType.isBlank()) {
+            log.warn("Skip site-meta message because metadata.eventType is missing");
+            return null;
+        }
+
+        final String eventType = metadataEventType.trim();
+        try {
+            SiteMetaEventType.fromDescription(eventType);
+            return eventType;
+        } catch (final IllegalArgumentException exception) {
+            log.warn("Skip site-meta message because metadata.eventType is unsupported: {}", metadataEventType);
+            return null;
         }
     }
 }

@@ -1,17 +1,25 @@
 package com.sitionix.wagssox.domain.event;
 
-public enum SiteMetaEventType {
-    SITE_CREATED("SITE_CREATED"),
-    SITE_UPDATED("SITE_UPDATED"),
-    SITE_DELETED("SITE_DELETED");
+import com.sitionix.forge.inbox.core.model.ForgeInboxTypedEnum;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
-    private final String value;
+@Getter
+@RequiredArgsConstructor
+public enum SiteMetaEventType implements ForgeInboxTypedEnum {
 
-    SiteMetaEventType(final String value) {
-        this.value = value;
+    SITE_CREATED(1L, "SITE_CREATED"),
+    SITE_UPDATED(2L, "SITE_UPDATED"),
+    SITE_DELETED(3L, "SITE_DELETED");
+
+    private final Long id;
+    private final String description;
+
+    public static SiteMetaEventType fromId(final Long id) {
+        return ForgeInboxTypedEnum.fromId(SiteMetaEventType.class, id);
     }
 
-    public String getValue() {
-        return this.value;
+    public static SiteMetaEventType fromDescription(final String description) {
+        return ForgeInboxTypedEnum.fromDescription(SiteMetaEventType.class, description);
     }
 }

@@ -7,6 +7,7 @@ import com.app_afesox.stsssox.events.sitemeta.SiteMetaEnvelope;
 import com.app_afesox.stsssox.events.sitemeta.SiteUpdatedEvent;
 import com.sitionix.forge.inbox.core.port.ForgeInbox;
 import com.sitionix.forge.inbox.core.port.ForgeInboxPayload;
+import com.sitionix.forge.inbox.core.port.InboxReceiveMetadata;
 import com.sitionix.wagssox.domain.SiteMetaDelete;
 import com.sitionix.wagssox.domain.SiteMetaUpdate;
 import com.sitionix.wagssox.domain.WorkspaceSiteMeta;
@@ -25,7 +26,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.times;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.mockito.ArgumentCaptor;
 
@@ -81,20 +81,24 @@ class SiteMetaConsumerTest {
         final WorkspaceSiteMeta siteMeta = mock(WorkspaceSiteMeta.class);
         when(envelope.getPayload()).thenReturn(payload);
         when(envelope.getMetadata()).thenReturn(metadata);
+        when(metadata.getEventType()).thenReturn("SITE_CREATED");
         when(metadata.getIdempotencyId()).thenReturn("idemp-1");
         when(this.siteMetaEventMapper.asProjection(payload, WorkspaceSiteMeta.class)).thenReturn(siteMeta);
         final ArgumentCaptor<ForgeInboxPayload> payloadCaptor = ArgumentCaptor.forClass(ForgeInboxPayload.class);
+        final ArgumentCaptor<InboxReceiveMetadata> metadataCaptor = ArgumentCaptor.forClass(InboxReceiveMetadata.class);
 
         //when
         this.siteMetaConsumer.consumeSiteMeta(envelope);
 
         //then
-        verify(envelope, times(2)).getPayload();
+        verify(envelope).getPayload();
         verify(envelope).getMetadata();
+        verify(metadata).getEventType();
         verify(metadata).getIdempotencyId();
         verify(this.siteMetaEventMapper).asProjection(payload, WorkspaceSiteMeta.class);
-        verify(this.forgeInbox).receive(payloadCaptor.capture());
-        assertThat(payloadCaptor.getValue()).isEqualTo(new SiteCreatedInboxPayload(siteMeta, "idemp-1"));
+        verify(this.forgeInbox).receive(payloadCaptor.capture(), metadataCaptor.capture());
+        assertThat(payloadCaptor.getValue()).isEqualTo(new SiteCreatedInboxPayload(siteMeta));
+        assertThat(metadataCaptor.getValue()).isEqualTo(new InboxReceiveMetadata("SITE_CREATED", "idemp-1", null));
         verifyNoMoreInteractions(envelope, payload, metadata);
     }
 
@@ -107,20 +111,24 @@ class SiteMetaConsumerTest {
         final SiteMetaUpdate siteMetaUpdate = mock(SiteMetaUpdate.class);
         when(envelope.getPayload()).thenReturn(payload);
         when(envelope.getMetadata()).thenReturn(metadata);
+        when(metadata.getEventType()).thenReturn("SITE_UPDATED");
         when(metadata.getIdempotencyId()).thenReturn("idemp-2");
         when(this.siteMetaEventMapper.asProjection(payload, SiteMetaUpdate.class)).thenReturn(siteMetaUpdate);
         final ArgumentCaptor<ForgeInboxPayload> payloadCaptor = ArgumentCaptor.forClass(ForgeInboxPayload.class);
+        final ArgumentCaptor<InboxReceiveMetadata> metadataCaptor = ArgumentCaptor.forClass(InboxReceiveMetadata.class);
 
         //when
         this.siteMetaConsumer.consumeSiteMeta(envelope);
 
         //then
-        verify(envelope, times(2)).getPayload();
+        verify(envelope).getPayload();
         verify(envelope).getMetadata();
+        verify(metadata).getEventType();
         verify(metadata).getIdempotencyId();
         verify(this.siteMetaEventMapper).asProjection(payload, SiteMetaUpdate.class);
-        verify(this.forgeInbox).receive(payloadCaptor.capture());
-        assertThat(payloadCaptor.getValue()).isEqualTo(new SiteUpdatedInboxPayload(siteMetaUpdate, "idemp-2"));
+        verify(this.forgeInbox).receive(payloadCaptor.capture(), metadataCaptor.capture());
+        assertThat(payloadCaptor.getValue()).isEqualTo(new SiteUpdatedInboxPayload(siteMetaUpdate));
+        assertThat(metadataCaptor.getValue()).isEqualTo(new InboxReceiveMetadata("SITE_UPDATED", "idemp-2", null));
         verifyNoMoreInteractions(envelope, payload, metadata);
     }
 
@@ -133,43 +141,41 @@ class SiteMetaConsumerTest {
         final SiteMetaDelete siteMetaDelete = mock(SiteMetaDelete.class);
         when(envelope.getPayload()).thenReturn(payload);
         when(envelope.getMetadata()).thenReturn(metadata);
+        when(metadata.getEventType()).thenReturn("SITE_DELETED");
         when(metadata.getIdempotencyId()).thenReturn("idemp-3");
         when(this.siteMetaEventMapper.asProjection(payload, SiteMetaDelete.class)).thenReturn(siteMetaDelete);
         final ArgumentCaptor<ForgeInboxPayload> payloadCaptor = ArgumentCaptor.forClass(ForgeInboxPayload.class);
+        final ArgumentCaptor<InboxReceiveMetadata> metadataCaptor = ArgumentCaptor.forClass(InboxReceiveMetadata.class);
 
         //when
         this.siteMetaConsumer.consumeSiteMeta(envelope);
 
         //then
-        verify(envelope, times(2)).getPayload();
+        verify(envelope).getPayload();
         verify(envelope).getMetadata();
+        verify(metadata).getEventType();
         verify(metadata).getIdempotencyId();
         verify(this.siteMetaEventMapper).asProjection(payload, SiteMetaDelete.class);
-        verify(this.forgeInbox).receive(payloadCaptor.capture());
-        assertThat(payloadCaptor.getValue()).isEqualTo(new SiteDeletedInboxPayload(siteMetaDelete, "idemp-3"));
+        verify(this.forgeInbox).receive(payloadCaptor.capture(), metadataCaptor.capture());
+        assertThat(payloadCaptor.getValue()).isEqualTo(new SiteDeletedInboxPayload(siteMetaDelete));
+        assertThat(metadataCaptor.getValue()).isEqualTo(new InboxReceiveMetadata("SITE_DELETED", "idemp-3", null));
         verifyNoMoreInteractions(envelope, payload, metadata);
     }
 
     @Test
-    void givenPayloadWithNullMetadata_whenConsumeSiteMeta_thenCreateInboxRecordWithNullIdempotencyKey() {
+    void givenPayloadWithNullMetadata_whenConsumeSiteMeta_thenSkipInboxRecordCreation() {
         //given
         final SiteMetaEnvelope envelope = mock(SiteMetaEnvelope.class);
         final SiteCreatedEvent payload = mock(SiteCreatedEvent.class);
-        final WorkspaceSiteMeta siteMeta = mock(WorkspaceSiteMeta.class);
         when(envelope.getPayload()).thenReturn(payload);
         when(envelope.getMetadata()).thenReturn(null);
-        when(this.siteMetaEventMapper.asProjection(payload, WorkspaceSiteMeta.class)).thenReturn(siteMeta);
-        final ArgumentCaptor<ForgeInboxPayload> payloadCaptor = ArgumentCaptor.forClass(ForgeInboxPayload.class);
 
         //when
         this.siteMetaConsumer.consumeSiteMeta(envelope);
 
         //then
-        verify(envelope, times(2)).getPayload();
+        verify(envelope).getPayload();
         verify(envelope).getMetadata();
-        verify(this.siteMetaEventMapper).asProjection(payload, WorkspaceSiteMeta.class);
-        verify(this.forgeInbox).receive(payloadCaptor.capture());
-        assertThat(payloadCaptor.getValue()).isEqualTo(new SiteCreatedInboxPayload(siteMeta, null));
         verifyNoMoreInteractions(envelope, payload);
     }
 
@@ -181,15 +187,37 @@ class SiteMetaConsumerTest {
         final Object payload = mock(Object.class);
         when(envelope.getPayload()).thenReturn(payload);
         when(envelope.getMetadata()).thenReturn(metadata);
+        when(metadata.getEventType()).thenReturn("SITE_CREATED");
         when(metadata.getIdempotencyId()).thenReturn("idemp-unsupported");
 
         //when
         this.siteMetaConsumer.consumeSiteMeta(envelope);
 
         //then
-        verify(envelope, times(2)).getPayload();
+        verify(envelope).getPayload();
         verify(envelope).getMetadata();
+        verify(metadata).getEventType();
         verify(metadata).getIdempotencyId();
+        verifyNoMoreInteractions(envelope, payload, metadata);
+    }
+
+    @Test
+    void givenUnsupportedMetadataEventType_whenConsumeSiteMeta_thenSkipInboxRecordCreation() {
+        //given
+        final SiteMetaEnvelope envelope = mock(SiteMetaEnvelope.class);
+        final Metadata metadata = mock(Metadata.class);
+        final SiteCreatedEvent payload = mock(SiteCreatedEvent.class);
+        when(envelope.getPayload()).thenReturn(payload);
+        when(envelope.getMetadata()).thenReturn(metadata);
+        when(metadata.getEventType()).thenReturn("SITE_UNKNOWN");
+
+        //when
+        this.siteMetaConsumer.consumeSiteMeta(envelope);
+
+        //then
+        verify(envelope).getPayload();
+        verify(envelope).getMetadata();
+        verify(metadata).getEventType();
         verifyNoMoreInteractions(envelope, payload, metadata);
     }
 }

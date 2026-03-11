@@ -37,7 +37,7 @@ class SiteCreatedInboxEventHandlerTest {
     void givenSiteCreatedPayload_whenHandle_thenApplySiteCreatedProjection() {
         //given
         final WorkspaceSiteMeta siteMeta = mock(WorkspaceSiteMeta.class);
-        final SiteCreatedInboxPayload payload = new SiteCreatedInboxPayload(siteMeta, "idempotency-1");
+        final SiteCreatedInboxPayload payload = new SiteCreatedInboxPayload(siteMeta);
         final InboxEvent<SiteCreatedInboxPayload> event = InboxEvent.<SiteCreatedInboxPayload>builder()
                 .eventType("SITE_CREATED")
                 .payload(payload)

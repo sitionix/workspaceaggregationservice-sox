@@ -37,7 +37,7 @@ class SiteUpdatedInboxEventHandlerTest {
     void givenSiteUpdatedPayload_whenHandle_thenApplySiteUpdatedProjection() {
         //given
         final SiteMetaUpdate siteMetaUpdate = mock(SiteMetaUpdate.class);
-        final SiteUpdatedInboxPayload payload = new SiteUpdatedInboxPayload(siteMetaUpdate, "idempotency-2");
+        final SiteUpdatedInboxPayload payload = new SiteUpdatedInboxPayload(siteMetaUpdate);
         final InboxEvent<SiteUpdatedInboxPayload> event = InboxEvent.<SiteUpdatedInboxPayload>builder()
                 .eventType("SITE_UPDATED")
                 .payload(payload)
