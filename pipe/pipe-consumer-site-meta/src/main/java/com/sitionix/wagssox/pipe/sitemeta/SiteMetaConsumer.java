@@ -15,7 +15,6 @@ import com.sitionix.wagssox.domain.WorkspaceSiteMeta;
 import com.sitionix.wagssox.domain.event.SiteMetaEventType;
 import com.sitionix.wagssox.domain.event.payload.SiteCreatedInboxPayload;
 import com.sitionix.wagssox.domain.event.payload.SiteDeletedInboxPayload;
-import com.sitionix.wagssox.domain.event.payload.SiteMetaInboxPayload;
 import com.sitionix.wagssox.domain.event.payload.SiteUpdatedInboxPayload;
 import com.sitionix.wagssox.pipe.sitemeta.mapper.SiteMetaEventMapper;
 import lombok.RequiredArgsConstructor;
@@ -47,14 +46,14 @@ public class SiteMetaConsumer implements SitemetaV1ConsumerHandler {
             return;
         }
         final String idempotencyKey = metadata.getIdempotencyId();
-        final SiteMetaInboxPayload inboxPayload = this.asInboxPayload(payload);
+        final ForgeInboxPayload inboxPayload = this.asInboxPayload(payload);
         if (inboxPayload == null) {
             return;
         }
         this.forgeInbox.receive(inboxPayload, new InboxReceiveMetadata(eventType, idempotencyKey, null));
     }
 
-    private SiteMetaInboxPayload asInboxPayload(final Object payload) {
+    private ForgeInboxPayload asInboxPayload(final Object payload) {
         switch (payload) {
             case SiteCreatedEvent createdEvent -> {
                 final WorkspaceSiteMeta siteMeta = this.siteMetaEventMapper.asProjection(createdEvent, WorkspaceSiteMeta.class);
