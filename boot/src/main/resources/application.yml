@@ -20,7 +20,6 @@ spring:
       group-id: ${SPRING_KAFKA_CONSUMER_GROUP_ID:wagssox-sitemeta}
 forge:
   inbox:
-    enabled: true
     domain-store: POSTGRES
   security:
     service-id: sitionixWorkspace
