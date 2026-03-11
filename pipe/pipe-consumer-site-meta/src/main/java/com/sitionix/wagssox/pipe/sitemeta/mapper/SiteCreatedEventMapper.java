@@ -28,5 +28,6 @@ public interface SiteCreatedEventMapper extends EventMapper<SiteCreatedEvent, Wo
     @Mapping(target = "description", expression = "java(payload.getDescription() == null ? null : payload.getDescription().toString())")
     @Mapping(target = "createdAt", expression = "java(java.time.Instant.parse(payload.getCreatedAt().toString()))")
     @Mapping(target = "updatedAt", expression = "java(java.time.Instant.parse(payload.getUpdatedAt().toString()))")
+    @Mapping(target = "deletedAt", ignore = true)
     WorkspaceSiteMeta asProjection(SiteCreatedEvent payload);
 }
