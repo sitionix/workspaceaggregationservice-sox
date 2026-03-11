@@ -14,11 +14,6 @@ public class SiteCreatedInboxEventHandler implements ForgeInboxEventHandler<Site
     private final SiteMetaProjectionCommand siteMetaProjectionCommand;
 
     @Override
-    public Class<SiteCreatedInboxPayload> payloadClass() {
-        return SiteCreatedInboxPayload.class;
-    }
-
-    @Override
     public void handle(final InboxEvent<SiteCreatedInboxPayload> event) {
         this.siteMetaProjectionCommand.applySiteCreated(event.getPayload().siteMeta());
     }

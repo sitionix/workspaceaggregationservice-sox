@@ -14,11 +14,6 @@ public class SiteDeletedInboxEventHandler implements ForgeInboxEventHandler<Site
     private final SiteMetaProjectionCommand siteMetaProjectionCommand;
 
     @Override
-    public Class<SiteDeletedInboxPayload> payloadClass() {
-        return SiteDeletedInboxPayload.class;
-    }
-
-    @Override
     public void handle(final InboxEvent<SiteDeletedInboxPayload> event) {
         this.siteMetaProjectionCommand.applySiteDeleted(event.getPayload().siteMetaDelete());
     }

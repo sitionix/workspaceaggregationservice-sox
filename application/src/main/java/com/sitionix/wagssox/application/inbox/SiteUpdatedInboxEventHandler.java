@@ -14,11 +14,6 @@ public class SiteUpdatedInboxEventHandler implements ForgeInboxEventHandler<Site
     private final SiteMetaProjectionCommand siteMetaProjectionCommand;
 
     @Override
-    public Class<SiteUpdatedInboxPayload> payloadClass() {
-        return SiteUpdatedInboxPayload.class;
-    }
-
-    @Override
     public void handle(final InboxEvent<SiteUpdatedInboxPayload> event) {
         this.siteMetaProjectionCommand.applySiteUpdated(event.getPayload().siteMetaUpdate());
     }
