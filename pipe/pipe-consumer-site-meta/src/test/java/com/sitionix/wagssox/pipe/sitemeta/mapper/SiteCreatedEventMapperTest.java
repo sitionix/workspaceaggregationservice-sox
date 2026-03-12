@@ -38,6 +38,30 @@ class SiteCreatedEventMapperTest {
         assertThat(actual).isNull();
     }
 
+    @Test
+    void givenMapper_whenPayloadType_thenReturnSiteCreatedEventClass() {
+        //given
+        final Class<SiteCreatedEvent> expected = SiteCreatedEvent.class;
+
+        //when
+        final Class<SiteCreatedEvent> actual = this.siteCreatedEventMapper.payloadType();
+
+        //then
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    void givenMapper_whenResultType_thenReturnWorkspaceSiteMetaClass() {
+        //given
+        final Class<WorkspaceSiteMeta> expected = WorkspaceSiteMeta.class;
+
+        //when
+        final Class<WorkspaceSiteMeta> actual = this.siteCreatedEventMapper.resultType();
+
+        //then
+        assertThat(actual).isEqualTo(expected);
+    }
+
     @ParameterizedTest
     @MethodSource("siteCreatedEnums")
     void givenSiteCreatedEventWithStatusAndType_whenAsProjection_thenReturnProjection(
