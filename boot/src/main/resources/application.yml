@@ -19,6 +19,8 @@ spring:
     consumer:
       group-id: ${SPRING_KAFKA_CONSUMER_GROUP_ID:wagssox-sitemeta}
 forge:
+  inbox:
+    domain-store: POSTGRES
   security:
     service-id: sitionixWorkspace
     dev:

@@ -1,6 +1,8 @@
 package com.sitionix.wagssox.it;
 
 import com.sitionix.forgeit.core.test.IntegrationTest;
+import com.sitionix.forge.inbox.postgres.entity.ForgeInboxEventEntity;
+import com.sitionix.forge.inbox.core.model.InboxStatus;
 import com.sitionix.wagssox.infrastructure.postgresql.entity.WorkspaceSiteMetaEntity;
 import com.sitionix.wagssox.it.infra.DatabaseContract;
 import com.sitionix.wagssox.it.kafka.SiteMetaKafkaContracts;
@@ -28,19 +30,29 @@ class SiteMetaConsumerIT {
         //when
         this.testManager.kafka()
                 .publish(SiteMetaKafkaContracts.SITE_META_CREATED_INPUT)
-                .sendAndVerify(result -> this.testManager.postgresql()
-                        .get(WorkspaceSiteMetaEntity.class)
-                        .singleElement()
-                        .andExpected(entity -> Objects.equals(entity.getSiteId(), expectedSiteId))
-                        .andExpected(entity -> Objects.equals(entity.getUserId(), 17L))
-                        .andExpected(entity -> Objects.equals(entity.getName(), "Site A"))
-                        .andExpected(entity -> Objects.equals(entity.getStatus().getId(), 1L))
-                        .andExpected(entity -> Objects.equals(entity.getType().getId(), 3L))
-                        .andExpected(entity -> Objects.equals(entity.getDescription(), "Description"))
-                        .andExpected(entity -> Objects.equals(entity.getCreatedAt(), expectedCreatedAt))
-                        .andExpected(entity -> Objects.equals(entity.getUpdatedAt(), expectedUpdatedAt))
-                        .andExpected(entity -> Objects.isNull(entity.getDeletedAt()))
-                        .assertEntity());
+                .sendAndVerify(result -> {
+                    this.testManager.postgresql()
+                            .get(WorkspaceSiteMetaEntity.class)
+                            .singleElement()
+                            .andExpected(entity -> Objects.equals(entity.getSiteId(), expectedSiteId))
+                            .andExpected(entity -> Objects.equals(entity.getUserId(), 17L))
+                            .andExpected(entity -> Objects.equals(entity.getName(), "Site A"))
+                            .andExpected(entity -> Objects.equals(entity.getStatus().getId(), 1L))
+                            .andExpected(entity -> Objects.equals(entity.getType().getId(), 3L))
+                            .andExpected(entity -> Objects.equals(entity.getDescription(), "Description"))
+                            .andExpected(entity -> Objects.equals(entity.getCreatedAt(), expectedCreatedAt))
+                            .andExpected(entity -> Objects.equals(entity.getUpdatedAt(), expectedUpdatedAt))
+                            .andExpected(entity -> Objects.isNull(entity.getDeletedAt()))
+                            .assertEntity();
+
+                    this.testManager.postgresql()
+                            .get(ForgeInboxEventEntity.class)
+                            .singleElement()
+                            .andExpected(entity -> Objects.equals(entity.getEventType(), "SITE_CREATED"))
+                            .andExpected(entity -> Objects.equals(entity.getStatusId(), InboxStatus.PROCESSED.getId()))
+                            .andExpected(entity -> Objects.equals(entity.getRetryCount(), 0))
+                            .assertEntity();
+                });
     }
 
     @Test
@@ -61,19 +73,29 @@ class SiteMetaConsumerIT {
         //when
         this.testManager.kafka()
                 .publish(SiteMetaKafkaContracts.SITE_META_UPDATED_INPUT)
-                .sendAndVerify(result -> this.testManager.postgresql()
-                        .get(WorkspaceSiteMetaEntity.class)
-                        .singleElement()
-                        .andExpected(entity -> Objects.equals(entity.getSiteId(), expectedSiteId))
-                        .andExpected(entity -> Objects.equals(entity.getUserId(), 21L))
-                        .andExpected(entity -> Objects.equals(entity.getName(), "Updated Site Name"))
-                        .andExpected(entity -> Objects.equals(entity.getStatus().getId(), 2L))
-                        .andExpected(entity -> Objects.equals(entity.getType().getId(), 2L))
-                        .andExpected(entity -> Objects.equals(entity.getDescription(), "Updated description"))
-                        .andExpected(entity -> Objects.equals(entity.getCreatedAt(), expectedCreatedAt))
-                        .andExpected(entity -> Objects.equals(entity.getUpdatedAt(), expectedUpdatedAt))
-                        .andExpected(entity -> Objects.isNull(entity.getDeletedAt()))
-                        .assertEntity());
+                .sendAndVerify(result -> {
+                    this.testManager.postgresql()
+                            .get(WorkspaceSiteMetaEntity.class)
+                            .singleElement()
+                            .andExpected(entity -> Objects.equals(entity.getSiteId(), expectedSiteId))
+                            .andExpected(entity -> Objects.equals(entity.getUserId(), 21L))
+                            .andExpected(entity -> Objects.equals(entity.getName(), "Updated Site Name"))
+                            .andExpected(entity -> Objects.equals(entity.getStatus().getId(), 2L))
+                            .andExpected(entity -> Objects.equals(entity.getType().getId(), 2L))
+                            .andExpected(entity -> Objects.equals(entity.getDescription(), "Updated description"))
+                            .andExpected(entity -> Objects.equals(entity.getCreatedAt(), expectedCreatedAt))
+                            .andExpected(entity -> Objects.equals(entity.getUpdatedAt(), expectedUpdatedAt))
+                            .andExpected(entity -> Objects.isNull(entity.getDeletedAt()))
+                            .assertEntity();
+
+                    this.testManager.postgresql()
+                            .get(ForgeInboxEventEntity.class)
+                            .singleElement()
+                            .andExpected(entity -> Objects.equals(entity.getEventType(), "SITE_UPDATED"))
+                            .andExpected(entity -> Objects.equals(entity.getStatusId(), InboxStatus.PROCESSED.getId()))
+                            .andExpected(entity -> Objects.equals(entity.getRetryCount(), 0))
+                            .assertEntity();
+                });
     }
 
     @Test
@@ -93,13 +115,51 @@ class SiteMetaConsumerIT {
         //when
         this.testManager.kafka()
                 .publish(SiteMetaKafkaContracts.SITE_META_DELETED_INPUT)
-                .sendAndVerify(result -> this.testManager.postgresql()
-                        .get(WorkspaceSiteMetaEntity.class)
-                        .singleElement()
-                        .andExpected(entity -> Objects.equals(entity.getSiteId(), expectedSiteId))
-                        .andExpected(entity -> Objects.equals(entity.getStatus().getId(), 3L))
-                        .andExpected(entity -> Objects.equals(entity.getDeletedAt(), expectedDeletedAt))
-                        .andExpected(entity -> Objects.equals(entity.getUpdatedAt(), expectedDeletedAt))
-                        .assertEntity());
+                .sendAndVerify(result -> {
+                    this.testManager.postgresql()
+                            .get(WorkspaceSiteMetaEntity.class)
+                            .singleElement()
+                            .andExpected(entity -> Objects.equals(entity.getSiteId(), expectedSiteId))
+                            .andExpected(entity -> Objects.equals(entity.getStatus().getId(), 3L))
+                            .andExpected(entity -> Objects.equals(entity.getDeletedAt(), expectedDeletedAt))
+                            .andExpected(entity -> Objects.equals(entity.getUpdatedAt(), expectedDeletedAt))
+                            .assertEntity();
+
+                    this.testManager.postgresql()
+                            .get(ForgeInboxEventEntity.class)
+                            .singleElement()
+                            .andExpected(entity -> Objects.equals(entity.getEventType(), "SITE_DELETED"))
+                            .andExpected(entity -> Objects.equals(entity.getStatusId(), InboxStatus.PROCESSED.getId()))
+                            .andExpected(entity -> Objects.equals(entity.getRetryCount(), 0))
+                            .assertEntity();
+                });
+    }
+
+    @Test
+    @DisplayName("given duplicate idempotency when same event consumed twice then inbox stores single record")
+    void givenDuplicateIdempotency_whenSameEventConsumedTwice_thenInboxStoresSingleRecord() {
+        //given
+        final UUID expectedSiteId = UUID.fromString("55db7314-63a5-49b5-bdb6-6a6cc59e61b9");
+
+        //when
+        this.testManager.kafka().publish(SiteMetaKafkaContracts.SITE_META_CREATED_INPUT).sendAndVerify(result -> this.testManager.postgresql()
+                .get(WorkspaceSiteMetaEntity.class)
+                .singleElement()
+                .andExpected(entity -> Objects.equals(entity.getSiteId(), expectedSiteId))
+                .assertEntity());
+        this.testManager.kafka().publish(SiteMetaKafkaContracts.SITE_META_CREATED_INPUT).sendAndVerify(result -> this.testManager.postgresql()
+                .get(WorkspaceSiteMetaEntity.class)
+                .singleElement()
+                .andExpected(entity -> Objects.equals(entity.getSiteId(), expectedSiteId))
+                .assertEntity());
+
+        //then
+        this.testManager.postgresql()
+                .get(ForgeInboxEventEntity.class)
+                .hasSize(1)
+                .singleElement()
+                .andExpected(entity -> Objects.equals(entity.getEventType(), "SITE_CREATED"))
+                .andExpected(entity -> Objects.equals(entity.getStatusId(), InboxStatus.PROCESSED.getId()))
+                .assertEntity();
     }
 }

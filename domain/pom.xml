@@ -13,6 +13,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.sitionix.forge</groupId>
+            <artifactId>forgecommon-inbox-core</artifactId>
+            <version>${forge.common.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
         </dependency>

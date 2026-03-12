@@ -24,7 +24,7 @@ public final class SiteMetaKafkaContracts {
                     .defaultEnvelope(SiteMetaEnvelope.class)
                     .topic("stsssox.it.site-meta.public.v1")
                     .defaultPayload(SiteUpdatedEvent.class, "defaultSiteUpdatedEvent.json")
-                    .defaultMetadata(Metadata.class, "defaultSiteMetaMetadata.json")
+                    .defaultMetadata(Metadata.class, "defaultSiteMetaUpdatedMetadata.json")
                     .payloadSerializer(AvroRecordSerializer.class)
                     .build();
 
@@ -33,7 +33,7 @@ public final class SiteMetaKafkaContracts {
                     .defaultEnvelope(SiteMetaEnvelope.class)
                     .topic("stsssox.it.site-meta.public.v1")
                     .defaultPayload(SiteDeletedEvent.class, "defaultSiteDeletedEvent.json")
-                    .defaultMetadata(Metadata.class, "defaultSiteMetaMetadata.json")
+                    .defaultMetadata(Metadata.class, "defaultSiteMetaDeletedMetadata.json")
                     .payloadSerializer(AvroRecordSerializer.class)
                     .build();
 
