@@ -23,7 +23,7 @@
         </dependency>
         <dependency>
             <groupId>com.afesox</groupId>
-            <artifactId>app-afesox-wagssox-api-first-sitionix-98-unstable</artifactId>
+            <artifactId>app-afesox-wagssox-api-first-stable</artifactId>
             <version>${wagssox.api.version}</version>
         </dependency>
         <dependency>
