@@ -23,7 +23,10 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class SiteApiMapperTest {
+class WorkspaceSitesApiMapperTest {
+
+    @Mock
+    private InstantApiMapper instantApiMapper;
 
     @Mock
     private WorkspaceSiteStatusApiMapper workspaceSiteStatusApiMapper;
@@ -31,16 +34,24 @@ class SiteApiMapperTest {
     @Mock
     private WorkspaceSiteTypeApiMapper workspaceSiteTypeApiMapper;
 
-    private SiteApiMapper siteApiMapper;
+    private WorkspaceSitesApiMapper workspaceSitesApiMapper;
 
     @BeforeEach
     void setUp() {
-        this.siteApiMapper = new SiteApiMapperImpl(this.workspaceSiteStatusApiMapper, this.workspaceSiteTypeApiMapper);
+        this.workspaceSitesApiMapper = new WorkspaceSitesApiMapperImpl(
+                this.instantApiMapper,
+                this.workspaceSiteStatusApiMapper,
+                this.workspaceSiteTypeApiMapper
+        );
     }
 
     @AfterEach
     void tearDown() {
-        verifyNoMoreInteractions(this.workspaceSiteStatusApiMapper, this.workspaceSiteTypeApiMapper);
+        verifyNoMoreInteractions(
+                this.instantApiMapper,
+                this.workspaceSiteStatusApiMapper,
+                this.workspaceSiteTypeApiMapper
+        );
     }
 
     @Test
@@ -53,14 +64,20 @@ class SiteApiMapperTest {
                 .thenReturn(WorkspaceSiteCardDTO.StatusEnum.DRAFT);
         when(this.workspaceSiteTypeApiMapper.mapType(workspaceSiteMeta.getType()))
                 .thenReturn(WorkspaceSiteCardDTO.TypeEnum.PORTFOLIO);
+        when(this.instantApiMapper.toUtcOffsetDateTime(workspaceSiteMeta.getCreatedAt()))
+                .thenReturn(OffsetDateTime.parse("2026-01-10T12:00:00Z"));
+        when(this.instantApiMapper.toUtcOffsetDateTime(workspaceSiteMeta.getUpdatedAt()))
+                .thenReturn(OffsetDateTime.parse("2026-01-29T08:30:00Z"));
 
         //when
-        final WorkspaceSitesPageDTO actual = this.siteApiMapper.asWorkspaceSitesPageDTO(workspaceSitesPage);
+        final WorkspaceSitesPageDTO actual = this.workspaceSitesApiMapper.asWorkspaceSitesPageDTO(workspaceSitesPage);
 
         //then
         assertThat(actual).isEqualTo(expected);
         verify(this.workspaceSiteStatusApiMapper).mapStatus(workspaceSiteMeta.getStatus());
         verify(this.workspaceSiteTypeApiMapper).mapType(workspaceSiteMeta.getType());
+        verify(this.instantApiMapper).toUtcOffsetDateTime(workspaceSiteMeta.getCreatedAt());
+        verify(this.instantApiMapper).toUtcOffsetDateTime(workspaceSiteMeta.getUpdatedAt());
     }
 
     private WorkspaceSitesPage getWorkspaceSitesPage() {

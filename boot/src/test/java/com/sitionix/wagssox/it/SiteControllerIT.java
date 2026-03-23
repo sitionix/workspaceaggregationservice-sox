@@ -1,6 +1,7 @@
 package com.sitionix.wagssox.it;
 
 import com.sitionix.forgeit.core.test.IntegrationTest;
+import com.sitionix.forgeit.mockmvc.api.PathParams;
 import com.sitionix.forgeit.mockmvc.api.QueryParams;
 import com.sitionix.wagssox.it.infra.ControllerEndpoint;
 import com.sitionix.wagssox.it.infra.DatabaseContract;
@@ -136,6 +137,131 @@ class SiteControllerIT {
                 .andExpectPath(MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.BAD_REQUEST.value()))
                 .andExpectPath(MockMvcResultMatchers.jsonPath("$.title").value(HttpStatus.BAD_REQUEST.getReasonPhrase()))
                 .andExpectPath(MockMvcResultMatchers.jsonPath("$.details").isNotEmpty())
+                .assertDefault();
+    }
+
+    @Test
+    @DisplayName("given active site when get site overview then return site overview")
+    void givenActiveSite_whenGetSiteOverview_thenReturnSiteOverview() {
+        //given
+        this.testManager.postgresql()
+                .create()
+                .to(DatabaseContract.WORKSPACE_SITE_META_STATUS_ENTITY_DB_CONTRACT.getById(1L))
+                .to(DatabaseContract.WORKSPACE_SITE_META_TYPE_ENTITY_DB_CONTRACT.getById(1L))
+                .to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withJson("workspaceSiteMetaGetSitesDraft1.json"))
+                .build();
+
+        //when then
+        this.testManager.mockMvc()
+                .ping(ControllerEndpoint.getSiteOverview())
+                .header("X-Forge-User-Sub", "123")
+                .withPathParameters(PathParams.create()
+                        .add("siteId", "00000000-0000-0000-0000-000000000001"))
+                .expectResponse("getSiteOverviewResponse.json")
+                .assertDefault();
+    }
+
+    @Test
+    @DisplayName("given archived site when get site overview then return not found")
+    void givenArchivedSite_whenGetSiteOverview_thenReturnNotFound() {
+        //given
+        this.testManager.postgresql()
+                .create()
+                .to(DatabaseContract.WORKSPACE_SITE_META_STATUS_ENTITY_DB_CONTRACT.getById(3L))
+                .to(DatabaseContract.WORKSPACE_SITE_META_TYPE_ENTITY_DB_CONTRACT.getById(1L))
+                .to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withJson("workspaceSiteMetaGetSitesArchived.json"))
+                .build();
+
+        //when then
+        this.testManager.mockMvc()
+                .ping(ControllerEndpoint.getSiteOverview())
+                .header("X-Forge-User-Sub", "123")
+                .withPathParameters(PathParams.create()
+                        .add("siteId", "00000000-0000-0000-0000-000000000900"))
+                .expectStatus(HttpStatus.NOT_FOUND)
+                .andExpectPath(MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.NOT_FOUND.value()))
+                .andExpectPath(MockMvcResultMatchers.jsonPath("$.title").value(HttpStatus.NOT_FOUND.getReasonPhrase()))
+                .andExpectPath(MockMvcResultMatchers.jsonPath("$.details").value("Site not found"))
+                .assertDefault();
+    }
+
+    @Test
+    @DisplayName("given other user site when get site overview then return not found")
+    void givenOtherUserSite_whenGetSiteOverview_thenReturnNotFound() {
+        //given
+        this.testManager.postgresql()
+                .create()
+                .to(DatabaseContract.WORKSPACE_SITE_META_STATUS_ENTITY_DB_CONTRACT.getById(1L))
+                .to(DatabaseContract.WORKSPACE_SITE_META_TYPE_ENTITY_DB_CONTRACT.getById(1L))
+                .to(DatabaseContract.WORKSPACE_SITE_META_ENTITY_DB_CONTRACT.withJson("workspaceSiteMetaGetSitesOtherUser.json"))
+                .build();
+
+        //when then
+        this.testManager.mockMvc()
+                .ping(ControllerEndpoint.getSiteOverview())
+                .header("X-Forge-User-Sub", "123")
+                .withPathParameters(PathParams.create()
+                        .add("siteId", "00000000-0000-0000-0000-000000000902"))
+                .expectStatus(HttpStatus.NOT_FOUND)
+                .andExpectPath(MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.NOT_FOUND.value()))
+                .andExpectPath(MockMvcResultMatchers.jsonPath("$.title").value(HttpStatus.NOT_FOUND.getReasonPhrase()))
+                .andExpectPath(MockMvcResultMatchers.jsonPath("$.details").value("Site not found"))
+                .assertDefault();
+    }
+
+    @Test
+    @DisplayName("given missing site when get site overview then return not found")
+    void givenMissingSite_whenGetSiteOverview_thenReturnNotFound() {
+        //given
+        this.testManager.postgresql()
+                .create()
+                .to(DatabaseContract.WORKSPACE_SITE_META_STATUS_ENTITY_DB_CONTRACT.getById(1L))
+                .to(DatabaseContract.WORKSPACE_SITE_META_TYPE_ENTITY_DB_CONTRACT.getById(1L))
+                .build();
+
+        //when then
+        this.testManager.mockMvc()
+                .ping(ControllerEndpoint.getSiteOverview())
+                .header("X-Forge-User-Sub", "123")
+                .withPathParameters(PathParams.create()
+                        .add("siteId", "00000000-0000-0000-0000-000000009999"))
+                .expectStatus(HttpStatus.NOT_FOUND)
+                .andExpectPath(MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.NOT_FOUND.value()))
+                .andExpectPath(MockMvcResultMatchers.jsonPath("$.title").value(HttpStatus.NOT_FOUND.getReasonPhrase()))
+                .andExpectPath(MockMvcResultMatchers.jsonPath("$.details").value("Site not found"))
+                .assertDefault();
+    }
+
+    @Test
+    @DisplayName("given invalid site id when get site overview then return bad request")
+    void givenInvalidSiteId_whenGetSiteOverview_thenReturnBadRequest() {
+        //given
+
+        //when then
+        this.testManager.mockMvc()
+                .ping(ControllerEndpoint.getSiteOverview())
+                .header("X-Forge-User-Sub", "123")
+                .withPathParameters(PathParams.create()
+                        .add("siteId", "not-a-valid-id"))
+                .expectStatus(HttpStatus.BAD_REQUEST)
+                .andExpectPath(MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.BAD_REQUEST.value()))
+                .andExpectPath(MockMvcResultMatchers.jsonPath("$.title").value(HttpStatus.BAD_REQUEST.getReasonPhrase()))
+                .andExpectPath(MockMvcResultMatchers.jsonPath("$.details").value("Invalid siteId"))
+                .assertDefault();
+    }
+
+    @Test
+    @DisplayName("given missing user context when get site overview then return forbidden")
+    void givenMissingUserContext_whenGetSiteOverview_thenReturnForbidden() {
+        //given
+
+        //when then
+        this.testManager.mockMvc()
+                .ping(ControllerEndpoint.getSiteOverview())
+                .header("X-Forge-User-Sub", null)
+                .withPathParameters(PathParams.create()
+                        .add("siteId", "00000000-0000-0000-0000-000000000001"))
+                .expectStatus(HttpStatus.FORBIDDEN)
                 .assertDefault();
     }
 }

@@ -1,8 +1,10 @@
 package com.sitionix.wagssox.api.handler;
 
 import com.app_afesox.wagssox.api_first.dto.ErrorDTO;
+import com.sitionix.wagssox.domain.exception.SiteOverviewNotFoundException;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -13,6 +15,7 @@ import org.springframework.validation.method.MethodValidationResult;
 import org.springframework.validation.method.ParameterValidationResult;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -103,6 +106,48 @@ class RestExceptionHandlerTest {
         //when
         final ResponseEntity<ErrorDTO> actual = this.restExceptionHandler
                 .handleHandlerMethodValidationException(exception);
+
+        //then
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    void givenInvalidSiteId_whenHandleMethodArgumentTypeMismatchException_thenReturnBadRequestErrorDto() {
+        //given
+        final MethodArgumentTypeMismatchException exception = new MethodArgumentTypeMismatchException(
+                "not-a-valid-id",
+                UUID.class,
+                "siteId",
+                null,
+                new IllegalArgumentException("Invalid siteId")
+        );
+        final ResponseEntity<ErrorDTO> expected = ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorDTO.builder()
+                        .code(400)
+                        .title("Bad Request")
+                        .details("Invalid siteId")
+                        .build());
+
+        //when
+        final ResponseEntity<ErrorDTO> actual = this.restExceptionHandler.handleMethodArgumentTypeMismatchException(exception);
+
+        //then
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    void givenSiteOverviewNotFoundException_whenHandleSiteOverviewNotFoundException_thenReturnNotFoundErrorDto() {
+        //given
+        final SiteOverviewNotFoundException exception = new SiteOverviewNotFoundException("Site not found");
+        final ResponseEntity<ErrorDTO> expected = ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorDTO.builder()
+                        .code(404)
+                        .title("Not Found")
+                        .details("Site not found")
+                        .build());
+
+        //when
+        final ResponseEntity<ErrorDTO> actual = this.restExceptionHandler.handleSiteOverviewNotFoundException(exception);
 
         //then
         assertThat(actual).isEqualTo(expected);

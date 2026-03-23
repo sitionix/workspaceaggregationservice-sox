@@ -35,6 +35,16 @@ public class WorkspaceSiteMetaRepositoryImpl implements WorkspaceSiteMetaReposit
     }
 
     @Override
+    public Optional<WorkspaceSiteMeta> findActiveByUserIdAndSiteId(final Long userId, final UUID siteId) {
+        return this.workspaceSiteMetaJpaRepository.findActiveByUserIdAndSiteId(
+                        userId,
+                        siteId,
+                        WorkspaceSiteMetaStatus.ARCHIVED.getId()
+                )
+                .map(this.workspaceSiteMetaInfraMapper::asDomain);
+    }
+
+    @Override
     public WorkspaceSitesPage findActiveByUserId(final Long userId, final Pageable pageable) {
         final Page<WorkspaceSiteMetaEntity> entities = this.workspaceSiteMetaJpaRepository.findActiveByUserId(
                 userId,

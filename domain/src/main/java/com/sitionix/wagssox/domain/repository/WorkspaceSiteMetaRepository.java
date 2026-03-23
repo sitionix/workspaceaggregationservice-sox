@@ -28,6 +28,15 @@ public interface WorkspaceSiteMetaRepository {
     Optional<WorkspaceSiteMeta> findBySiteId(UUID siteId);
 
     /**
+     * Loads active site metadata for a specific user and site identifier.
+     *
+     * @param userId user identifier.
+     * @param siteId site identifier.
+     * @return active site metadata when accessible for the user.
+     */
+    Optional<WorkspaceSiteMeta> findActiveByUserIdAndSiteId(Long userId, UUID siteId);
+
+    /**
      * Loads non-archived site metadata for a user in descending update order.
      *
      * @param userId user identifier.
