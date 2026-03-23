@@ -92,6 +92,26 @@ class WorkspaceSiteMetaRepositoryImplTest {
     }
 
     @Test
+    void givenUserIdAndSiteId_whenFindActiveByUserIdAndSiteId_thenReturnMappedDomainModel() {
+        //given
+        final Long userId = 123L;
+        final UUID siteId = UUID.fromString("a4daef31-b03a-4e90-9fe9-297c74eaf628");
+        final WorkspaceSiteMetaEntity entity = mock(WorkspaceSiteMetaEntity.class);
+        final WorkspaceSiteMeta expected = mock(WorkspaceSiteMeta.class);
+        when(this.workspaceSiteMetaJpaRepository.findActiveByUserIdAndSiteId(userId, siteId, 3L))
+                .thenReturn(Optional.of(entity));
+        when(this.workspaceSiteMetaInfraMapper.asDomain(entity)).thenReturn(expected);
+
+        //when
+        final Optional<WorkspaceSiteMeta> actual = this.workspaceSiteMetaRepository.findActiveByUserIdAndSiteId(userId, siteId);
+
+        //then
+        assertThat(actual).contains(expected);
+        verify(this.workspaceSiteMetaJpaRepository).findActiveByUserIdAndSiteId(userId, siteId, 3L);
+        verify(this.workspaceSiteMetaInfraMapper).asDomain(entity);
+    }
+
+    @Test
     void givenUserIdAndPageable_whenFindActiveByUserId_thenQueryWithArchivedFilterAndMapPage() {
         //given
         final Long userId = 123L;

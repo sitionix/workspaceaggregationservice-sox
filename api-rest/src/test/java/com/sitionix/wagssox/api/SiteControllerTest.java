@@ -1,9 +1,13 @@
 package com.sitionix.wagssox.api;
 
+import com.app_afesox.wagssox.api_first.dto.SiteOverviewDTO;
 import com.app_afesox.wagssox.api_first.dto.WorkspaceSitesPageDTO;
 import com.sitionix.wagssox.api.mapper.SiteApiMapper;
+import com.sitionix.wagssox.domain.SiteOverview;
 import com.sitionix.wagssox.domain.WorkspaceSitesPage;
+import com.sitionix.wagssox.domain.usecase.GetSiteOverview;
 import com.sitionix.wagssox.domain.usecase.GetWorkspaceSites;
+import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,16 +34,19 @@ class SiteControllerTest {
     @Mock
     private GetWorkspaceSites getWorkspaceSites;
 
+    @Mock
+    private GetSiteOverview getSiteOverview;
+
     private SiteController siteController;
 
     @BeforeEach
     void setUp() {
-        this.siteController = new SiteController(this.siteApiMapper, this.getWorkspaceSites);
+        this.siteController = new SiteController(this.siteApiMapper, this.getWorkspaceSites, this.getSiteOverview);
     }
 
     @AfterEach
     void tearDown() {
-        verifyNoMoreInteractions(this.siteApiMapper, this.getWorkspaceSites);
+        verifyNoMoreInteractions(this.siteApiMapper, this.getWorkspaceSites, this.getSiteOverview);
     }
 
     @Test
@@ -64,5 +71,23 @@ class SiteControllerTest {
         assertThat(pageable.getPageSize()).isEqualTo(size);
         assertThat(pageable.getSort().getOrderFor("updatedAt").isDescending()).isTrue();
         verify(this.siteApiMapper).asWorkspaceSitesPageDTO(useCaseResult);
+    }
+
+    @Test
+    void givenSiteId_whenGetSiteOverview_thenReturnSiteOverviewDto() {
+        //given
+        final UUID siteId = UUID.fromString("c9b1f3f4-12c7-11ec-82a8-0242ac130003");
+        final SiteOverview useCaseResult = mock(SiteOverview.class);
+        final SiteOverviewDTO responseDTO = mock(SiteOverviewDTO.class);
+        when(this.getSiteOverview.execute(siteId)).thenReturn(useCaseResult);
+        when(this.siteApiMapper.asSiteOverviewDTO(useCaseResult)).thenReturn(responseDTO);
+
+        //when
+        final ResponseEntity<SiteOverviewDTO> actual = this.siteController.getSiteOverview(siteId);
+
+        //then
+        assertThat(actual).isEqualTo(ResponseEntity.ok(responseDTO));
+        verify(this.getSiteOverview).execute(siteId);
+        verify(this.siteApiMapper).asSiteOverviewDTO(useCaseResult);
     }
 }

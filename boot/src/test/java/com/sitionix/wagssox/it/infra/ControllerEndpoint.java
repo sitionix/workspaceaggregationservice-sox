@@ -1,5 +1,6 @@
 package com.sitionix.wagssox.it.infra;
 
+import com.app_afesox.wagssox.api_first.dto.SiteOverviewDTO;
 import com.app_afesox.wagssox.api_first.dto.WorkspaceSitesPageDTO;
 import com.sitionix.forgeit.domain.endpoint.Endpoint;
 import com.sitionix.forgeit.domain.endpoint.HttpMethod;
@@ -14,6 +15,16 @@ public class ControllerEndpoint {
                 HttpMethod.GET,
                 Void.class,
                 WorkspaceSitesPageDTO.class,
+                (MockmvcDefault) context -> context.expectStatus(HttpStatus.OK.value())
+        );
+    }
+
+    public static Endpoint<Void, SiteOverviewDTO> getSiteOverview() {
+        return Endpoint.createContract(
+                "/api/v1/sites/{siteId}/overview",
+                HttpMethod.GET,
+                Void.class,
+                SiteOverviewDTO.class,
                 (MockmvcDefault) context -> context.expectStatus(HttpStatus.OK.value())
         );
     }

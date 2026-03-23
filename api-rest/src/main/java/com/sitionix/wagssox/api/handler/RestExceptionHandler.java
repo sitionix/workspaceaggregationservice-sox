@@ -1,6 +1,7 @@
 package com.sitionix.wagssox.api.handler;
 
 import com.app_afesox.wagssox.api_first.dto.ErrorDTO;
+import com.sitionix.wagssox.domain.exception.SiteOverviewNotFoundException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.context.MessageSourceResolvable;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 public class RestExceptionHandler {
@@ -43,6 +45,19 @@ public class RestExceptionHandler {
                 .map(ConstraintViolation::getMessage)
                 .orElse("Validation failed");
         return this.buildError(HttpStatus.BAD_REQUEST, details);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorDTO> handleMethodArgumentTypeMismatchException(final MethodArgumentTypeMismatchException ex) {
+        if ("siteId".equals(ex.getName())) {
+            return this.buildError(HttpStatus.BAD_REQUEST, "Invalid siteId");
+        }
+        return this.buildError(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler(SiteOverviewNotFoundException.class)
+    public ResponseEntity<ErrorDTO> handleSiteOverviewNotFoundException(final SiteOverviewNotFoundException ex) {
+        return this.buildError(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
     private ResponseEntity<ErrorDTO> buildError(final HttpStatus status, final String details) {

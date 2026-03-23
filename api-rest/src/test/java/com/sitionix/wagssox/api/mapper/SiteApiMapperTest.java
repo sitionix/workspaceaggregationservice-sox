@@ -1,7 +1,9 @@
 package com.sitionix.wagssox.api.mapper;
 
+import com.app_afesox.wagssox.api_first.dto.SiteOverviewDTO;
 import com.app_afesox.wagssox.api_first.dto.WorkspaceSiteCardDTO;
 import com.app_afesox.wagssox.api_first.dto.WorkspaceSitesPageDTO;
+import com.sitionix.wagssox.domain.SiteOverview;
 import com.sitionix.wagssox.domain.WorkspaceSiteMeta;
 import com.sitionix.wagssox.domain.WorkspaceSiteMetaStatus;
 import com.sitionix.wagssox.domain.WorkspaceSiteMetaType;
@@ -31,16 +33,32 @@ class SiteApiMapperTest {
     @Mock
     private WorkspaceSiteTypeApiMapper workspaceSiteTypeApiMapper;
 
+    @Mock
+    private SiteOverviewStatusApiMapper siteOverviewStatusApiMapper;
+
+    @Mock
+    private SiteOverviewTypeApiMapper siteOverviewTypeApiMapper;
+
     private SiteApiMapper siteApiMapper;
 
     @BeforeEach
     void setUp() {
-        this.siteApiMapper = new SiteApiMapperImpl(this.workspaceSiteStatusApiMapper, this.workspaceSiteTypeApiMapper);
+        this.siteApiMapper = new SiteApiMapperImpl(
+                this.siteOverviewStatusApiMapper,
+                this.siteOverviewTypeApiMapper,
+                this.workspaceSiteStatusApiMapper,
+                this.workspaceSiteTypeApiMapper
+        );
     }
 
     @AfterEach
     void tearDown() {
-        verifyNoMoreInteractions(this.workspaceSiteStatusApiMapper, this.workspaceSiteTypeApiMapper);
+        verifyNoMoreInteractions(
+                this.workspaceSiteStatusApiMapper,
+                this.workspaceSiteTypeApiMapper,
+                this.siteOverviewStatusApiMapper,
+                this.siteOverviewTypeApiMapper
+        );
     }
 
     @Test
@@ -61,6 +79,25 @@ class SiteApiMapperTest {
         assertThat(actual).isEqualTo(expected);
         verify(this.workspaceSiteStatusApiMapper).mapStatus(workspaceSiteMeta.getStatus());
         verify(this.workspaceSiteTypeApiMapper).mapType(workspaceSiteMeta.getType());
+    }
+
+    @Test
+    void givenSiteOverview_whenAsSiteOverviewDto_thenReturnSiteOverviewDto() {
+        //given
+        final SiteOverview siteOverview = this.getSiteOverview();
+        final SiteOverviewDTO expected = this.getSiteOverviewDto();
+        when(this.siteOverviewStatusApiMapper.mapStatus(siteOverview.status()))
+                .thenReturn(SiteOverviewDTO.StatusEnum.DRAFT);
+        when(this.siteOverviewTypeApiMapper.mapType(siteOverview.type()))
+                .thenReturn(SiteOverviewDTO.TypeEnum.PORTFOLIO);
+
+        //when
+        final SiteOverviewDTO actual = this.siteApiMapper.asSiteOverviewDTO(siteOverview);
+
+        //then
+        assertThat(actual).isEqualTo(expected);
+        verify(this.siteOverviewStatusApiMapper).mapStatus(siteOverview.status());
+        verify(this.siteOverviewTypeApiMapper).mapType(siteOverview.type());
     }
 
     private WorkspaceSitesPage getWorkspaceSitesPage() {
@@ -94,6 +131,30 @@ class SiteApiMapperTest {
                 .page(0)
                 .size(20)
                 .hasNext(true)
+                .build();
+    }
+
+    private SiteOverview getSiteOverview() {
+        return SiteOverview.builder()
+                .siteId(UUID.fromString("c9b1f3f4-12c7-11ec-82a8-0242ac130003"))
+                .name("Portfolio")
+                .status(WorkspaceSiteMetaStatus.DRAFT)
+                .type(WorkspaceSiteMetaType.PORTFOLIO)
+                .description(null)
+                .createdAt(Instant.parse("2026-01-10T12:00:00Z"))
+                .updatedAt(Instant.parse("2026-01-29T08:30:00Z"))
+                .build();
+    }
+
+    private SiteOverviewDTO getSiteOverviewDto() {
+        return SiteOverviewDTO.builder()
+                .siteId(UUID.fromString("c9b1f3f4-12c7-11ec-82a8-0242ac130003"))
+                .name("Portfolio")
+                .status(SiteOverviewDTO.StatusEnum.DRAFT)
+                .type(SiteOverviewDTO.TypeEnum.PORTFOLIO)
+                .description(null)
+                .createdAt(OffsetDateTime.parse("2026-01-10T12:00:00Z"))
+                .updatedAt(OffsetDateTime.parse("2026-01-29T08:30:00Z"))
                 .build();
     }
 }

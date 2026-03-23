@@ -1,6 +1,7 @@
 package com.sitionix.wagssox.infrastructure.postgresql.jpa;
 
 import com.sitionix.wagssox.infrastructure.postgresql.entity.WorkspaceSiteMetaEntity;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,5 +21,18 @@ public interface WorkspaceSiteMetaJpaRepository extends JpaRepository<WorkspaceS
             @Param("userId") Long userId,
             @Param("excludedStatusId") Long excludedStatusId,
             Pageable pageable
+    );
+
+    @Query("""
+            SELECT siteMeta
+            FROM WorkspaceSiteMetaEntity siteMeta
+            WHERE siteMeta.userId = :userId
+              AND siteMeta.siteId = :siteId
+              AND siteMeta.status.id <> :excludedStatusId
+            """)
+    Optional<WorkspaceSiteMetaEntity> findActiveByUserIdAndSiteId(
+            @Param("userId") Long userId,
+            @Param("siteId") UUID siteId,
+            @Param("excludedStatusId") Long excludedStatusId
     );
 }
