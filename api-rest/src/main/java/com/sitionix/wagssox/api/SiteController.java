@@ -3,8 +3,9 @@ package com.sitionix.wagssox.api;
 import com.app_afesox.wagssox.api_first.api.SiteApi;
 import com.app_afesox.wagssox.api_first.dto.SiteOverviewDTO;
 import com.app_afesox.wagssox.api_first.dto.WorkspaceSitesPageDTO;
+import com.sitionix.wagssox.api.mapper.SiteOverviewApiMapper;
+import com.sitionix.wagssox.api.mapper.WorkspaceSitesApiMapper;
 import com.sitionix.wagssox.domain.SiteOverview;
-import com.sitionix.wagssox.api.mapper.SiteApiMapper;
 import com.sitionix.wagssox.domain.WorkspaceSitesPage;
 import com.sitionix.wagssox.domain.usecase.GetSiteOverview;
 import com.sitionix.wagssox.domain.usecase.GetWorkspaceSites;
@@ -20,7 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class SiteController implements SiteApi {
 
-    private final SiteApiMapper siteApiMapper;
+    private final WorkspaceSitesApiMapper workspaceSitesApiMapper;
+    private final SiteOverviewApiMapper siteOverviewApiMapper;
     private final GetWorkspaceSites getWorkspaceSites;
     private final GetSiteOverview getSiteOverview;
 
@@ -31,12 +33,12 @@ public class SiteController implements SiteApi {
     ) {
         final Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "updatedAt"));
         final WorkspaceSitesPage response = this.getWorkspaceSites.execute(pageable);
-        return ResponseEntity.ok(this.siteApiMapper.asWorkspaceSitesPageDTO(response));
+        return ResponseEntity.ok(this.workspaceSitesApiMapper.asWorkspaceSitesPageDTO(response));
     }
 
     @Override
     public ResponseEntity<SiteOverviewDTO> getSiteOverview(final UUID siteId) {
         final SiteOverview response = this.getSiteOverview.execute(siteId);
-        return ResponseEntity.ok(this.siteApiMapper.asSiteOverviewDTO(response));
+        return ResponseEntity.ok(this.siteOverviewApiMapper.asSiteOverviewDTO(response));
     }
 }
