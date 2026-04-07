@@ -1,7 +1,7 @@
 database:
   name: wags_sox
   environments:
-    prod:
+    dev:
       url: jdbc:postgresql://127.0.0.1:15434/wags_sox
       username: wagssox_app
       password_secret_name: WAGS_SOX_DB_PASSWORD

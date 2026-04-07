@@ -1,5 +1,5 @@
 name: Service Deploy Run
-description: Build, publish, deploy, and verify the workspace aggregation service on the prod VM.
+description: Build, publish, deploy, and verify the workspace aggregation service on the target VM.
 
 inputs:
   github_environment:
@@ -104,12 +104,12 @@ runs:
         SITIONIX_BIND_ADDRESS=127.0.0.1
         SITIONIX_HOST_PORT=9082
         SITIONIX_CONTAINER_PORT=9082
-        SITIONIX_ACTIVE_PROFILE=prod
-        SITIONIX_DOCKER_NETWORK=sitionix-prod
+        SITIONIX_ACTIVE_PROFILE=${GITHUB_ENVIRONMENT_NAME}
+        SITIONIX_DOCKER_NETWORK=sitionix-${GITHUB_ENVIRONMENT_NAME}
         SITIONIX_RUNTIME_ROOT=/opt/sitionix/runtime/workspaceaggregationservice-sox
         SITIONIX_BACKUP_ROOT=/opt/sitionix/backups/workspaceaggregationservice-sox
-        SITIONIX_SHARED_SECRET_ENV_PATH=/opt/sitionix/runtime/shared/prod-internal-auth.env
-        SITIONIX_SERVICE_ENV_PATH=/opt/sitionix/runtime/workspaceaggregationservice-sox/shared/workspaceaggregationservice-sox.prod.env
+        SITIONIX_SHARED_SECRET_ENV_PATH=/opt/sitionix/runtime/shared/${GITHUB_ENVIRONMENT_NAME}-internal-auth.env
+        SITIONIX_SERVICE_ENV_PATH=/opt/sitionix/runtime/workspaceaggregationservice-sox/shared/workspaceaggregationservice-sox.${GITHUB_ENVIRONMENT_NAME}.env
         SITIONIX_LOCAL_READINESS_URL=http://127.0.0.1:9082/wagssox/actuator/health/readiness
         SITIONIX_LOCAL_HEALTH_URL=http://127.0.0.1:9082/wagssox/actuator/health
         SITIONIX_DB_URL=jdbc:postgresql://postgres:5432/wags_sox
@@ -124,7 +124,7 @@ runs:
           "imageRef": "${IMAGE_REF}",
           "githubSha": "${GITHUB_SHA}",
           "githubEnvironment": "${GITHUB_ENVIRONMENT_NAME}",
-          "dockerNetwork": "sitionix-prod",
+          "dockerNetwork": "sitionix-${GITHUB_ENVIRONMENT_NAME}",
           "containerName": "workspaceaggregationservice-sox",
           "privateHostPort": "127.0.0.1:9082",
           "privateBaseUrl": "http://workspaceaggregationservice-sox:9082/wagssox"
