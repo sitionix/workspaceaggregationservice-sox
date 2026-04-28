@@ -46,6 +46,9 @@ forge:
       sitionixBff:
         allow:
           - "*"
+      sitionixAutomation:
+        allow:
+          - "*"
     server:
       excludes:
         - "/actuator/health"
